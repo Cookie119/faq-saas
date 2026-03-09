@@ -16,14 +16,26 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+origins = [
+    # Local dev
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    # Production
+    "https://faq-saas-blond.vercel.app",
+    "https://faq-saas.onrender.com",
+]
+
+# Also add whatever is in FRONTEND_URL env var (future-proof)
+if settings.frontend_url:
+    url = settings.frontend_url.rstrip("/")
+    if url not in origins:
+        origins.append(url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,9 +46,11 @@ app.include_router(dashboard.router)
 app.include_router(ask.router)
 app.include_router(admin.router)
 
+
 @app.get("/health", tags=["Health"])
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "app": settings.app_name}
+
 
 @app.get("/", tags=["Health"])
 def root():
