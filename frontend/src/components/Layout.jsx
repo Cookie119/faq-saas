@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Database, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Database, BarChart2, Settings, BarChart, LogOut, Shield } from 'lucide-react'
 
 export default function Layout({ children }) {
   const { company, logout } = useAuth()
@@ -11,12 +11,13 @@ export default function Layout({ children }) {
     navigate('/login')
   }
 
-  // Helper to get current page title for the top bar
   const getTitle = () => {
     const path = window.location.pathname
-    if (path === '/dashboard') return 'Overview'
+    if (path === '/dashboard')      return 'Overview'
     if (path.startsWith('/domains')) return 'Domains'
-    if (path === '/settings') return 'Settings'
+    if (path === '/analytics')       return 'Analytics'
+    if (path === '/settings')        return 'Settings'
+    if (path === '/admin')           return 'Admin'
     return 'Dashboard'
   }
 
@@ -25,33 +26,37 @@ export default function Layout({ children }) {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="logo-mark">faqbot</div>
-          <div className="logo-sub">Dashboard</div>
+          <img src="/logo_green.svg" alt="Ginkgo" />
+          <div>
+            <div className="logo-mark">ginkgo</div>
+            <div className="logo-sub">Dashboard</div>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
-          <NavLink 
-            to="/dashboard" 
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          >
-            <LayoutDashboard size={16} /> 
+          <NavLink to="/dashboard" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <LayoutDashboard size={15} />
             <span>Overview</span>
           </NavLink>
-          
-          <NavLink 
-            to="/domains" 
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          >
-            <Database size={16} /> 
+
+          <NavLink to="/domains" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <Database size={15} />
             <span>Domains</span>
           </NavLink>
-          
-          <NavLink 
-            to="/settings" 
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          >
-            <Settings size={16} /> 
+
+          <NavLink to="/analytics" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <BarChart2 size={15} />
+            <span>Analytics</span>
+          </NavLink>
+
+          <NavLink to="/settings" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <Settings size={15} />
             <span>Settings</span>
+          </NavLink>
+
+          <NavLink to="/admin" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <Shield size={15} />
+            <span>Admin</span>
           </NavLink>
         </nav>
 
@@ -60,20 +65,20 @@ export default function Layout({ children }) {
             <div className="plan-name">{company?.plan || 'Free'} Plan</div>
             <div className="plan-usage">{company?.name || 'User Account'}</div>
           </div>
-          <button className="nav-item" onClick={doLogout}>
-            <LogOut size={16} />
+          <button className="nav-item" style={{ width: '100%' }} onClick={doLogout}>
+            <LogOut size={15} />
             <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Main */}
       <main className="main">
         <div className="topbar">
           <div className="topbar-title">{getTitle()}</div>
         </div>
         <div className="page-content">
-            {children}
+          {children}
         </div>
       </main>
     </div>

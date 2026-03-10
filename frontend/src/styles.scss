@@ -2,193 +2,116 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
 
 // ── Variables ─────────────────────────────────────────────────────
- $bg: #FAFAF8;
- $ink: #111110;
- $ink2: #3a3a38;
- $ink3: #7a7a76;
- $green: #2D6A4F;
- $green2: #1B4332;
- $green-light: #D8F3DC;
- $gold: #B57A1A;
- $border: #E8E8E4;
- $code-bg: #1A1A18;
- $red: #E63946;
+$bg:           #141412;   // dark page bg
+$bg2:          #1C1C1A;   // card bg
+$bg3:          #222220;   // elevated / hover
+$sidebar-bg:   #111110;   // sidebar slightly darker
+$ink:          #EEEEE8;   // primary text (warm off-white)
+$ink2:         #A8A8A0;   // secondary text
+$ink3:         #6A6A64;   // muted text
+$green:        #4A9270;   // primary accent (muted sage)
+$green2:       #3A7258;   // hover green
+$green-light:  rgba(74, 146, 112, 0.12); // subtle tint
+$gold:         #C49A3C;   // amber accent
+$border:       #2C2C28;   // subtle border
+$border2:      #363632;   // slightly stronger border
+$code-bg:      #0D0D0B;   // code block bg
+$red:          #E05252;   // danger
 
-// ── Base & Reset ──────────────────────────────────────────────────
+// ── CSS Custom Properties ─────────────────────────────────────────
 :root {
-  --bg: #{$bg};
-  --ink: #{$ink};
-  --ink2: #{$ink2};
-  --ink3: #{$ink3};
-  --green: #{$green};
-  --green-light: #{$green-light};
-  --border: #{$border};
-  --radius: 8px;
+  --bg:           #{$bg};
+  --bg2:          #{$bg2};
+  --bg3:          #{$bg3};
+  --ink:          #{$ink};
+  --ink2:         #{$ink2};
+  --ink3:         #{$ink3};
+  --green:        #{$green};
+  --green2:       #{$green2};
+  --green-light:  #{$green-light};
+  --gold:         #{$gold};
+  --border:       #{$border};
+  --border2:      #{$border2};
+  --red:          #{$red};
+  --radius:       8px;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+// ── Base & Reset ──────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
-  color: var(--ink);
+  background: $bg;
+  color: $ink;
   font-family: 'DM Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
 
-// ── Auth Pages (Login) ────────────────────────────────────────────
-.auth-page {
-  min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px; background: $bg;
-}
-
-.auth-card {
-  width: 100%; max-width: 420px;
-  background: #fff; padding: 48px;
-  border: 1px solid $border;
-  border-radius: 12px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.04);
-  animation: fadeUp 0.6s ease both;
-}
-
-.auth-logo {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  margin-bottom: 8px;
-  text-decoration: none;
-  
-  img { width: 32px; height: 32px; }
-  span { 
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.4rem; color: $ink; 
-  }
-}
-
-.auth-tagline {
-  text-align: center;
-  font-family: 'DM Mono', monospace;
-  font-size: 0.75rem; color: $ink3;
-  margin-bottom: 32px;
-}
-
-.form-group { margin-bottom: 16px; }
-.form-label {
-  display: block; font-size: 0.82rem; font-weight: 500;
-  color: #555; margin-bottom: 6px;
-}
-// ... existing variables ...
-
-.form-input {
-  width: 100%; padding: 12px 14px;
-  background: #FDFDF9; // Slightly off-white for input fields
-  border: 1px solid $border;
-  border-radius: 8px; 
-  font-size: 0.95rem;
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.2s ease;
-  color: #111; // 👈 FIX: Ensures text is always visible
-
-  &:focus {
-    outline: none;
-    border-color: $green;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba($green, 0.1);
-  }
-  
-  &::placeholder { color: $ink3; opacity: 0.7; }
-  
-  &:disabled {
-    background: #f0f0f0;
-    color: #888;
-    cursor: not-allowed;
-  }
-}
-
-// ... rest of your scss ...
-
-.auth-switch {
-  text-align: center; margin-top: 24px;
-  font-size: 0.85rem; color: #777;
-  a { color: $green; text-decoration: none; font-weight: 500; &:hover { text-decoration: underline; } }
-}
-
-.spinner {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  display: inline-block;
-}
-
-// ── Animations ────────────────────────────────────────────────────
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-// Animation utility classes
-.fu  { opacity:0; animation: fadeUp 0.6s ease forwards; }
-.d1  { animation-delay: 0.1s; }
-.d2  { animation-delay: 0.2s; }
-.d3  { animation-delay: 0.3s; }
-.d4  { animation-delay: 0.4s; }
-.d5  { animation-delay: 0.5s; }
-
-// Stagger children animation for grids
-.stagger-up > * {
-  opacity: 0;
-  animation: fadeUp 0.6s ease forwards;
-  @for $i from 1 through 9 {
-    &:nth-child(#{$i}) { animation-delay: #{$i * 0.08}s; }
-  }
-}
-
-// ── Responsive ────────────────────────────────────────────────────
-@media (max-width: 768px) {
-  .nav { padding: 16px 20px; }
-  .nav.scrolled { padding: 12px 20px; }
-  .nav-links { gap: 16px; }
-  .steps, .features-grid, .pricing-grid { grid-template-columns: 1fr; }
-  .hero-actions { flex-direction: column; align-items: center; }
-  footer { flex-direction: column; gap: 12px; text-align: center; }
-  section { padding: 70px 20px; }
-}
-
-
-// ── Typography Standards ──────────────────────────────────────────
+// ── Typography ────────────────────────────────────────────────────
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'DM Sans', sans-serif; // Standardize all headers to DM Sans for dashboard
+  font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   color: $ink;
   letter-spacing: -0.01em;
 }
 
 .page-title {
-  font-family: 'DM Serif Display', serif; // Only use Serif for main page titles
-  font-size: 1.8rem;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.7rem;
   letter-spacing: -0.02em;
   color: $ink;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.text-muted { color: $ink3; font-size: 0.875rem; }
-.text-sm { font-size: 0.78rem; }
-.text-green { color: $green; font-weight: 500; }
+.text-muted  { color: $ink3; font-size: 0.875rem; }
+.text-sm     { font-size: 0.78rem; }
+.text-green  { color: $green; font-weight: 500; }
 
-// ── Layout Structure ───────────────────────────────────────────────
+// ── Animations ────────────────────────────────────────────────────
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.fu { opacity:0; animation: fadeUp 0.55s ease forwards; }
+.d1 { animation-delay: 0.08s; }
+.d2 { animation-delay: 0.18s; }
+.d3 { animation-delay: 0.28s; }
+.d4 { animation-delay: 0.38s; }
+.d5 { animation-delay: 0.48s; }
+
+.stagger-up > * {
+  opacity: 0;
+  animation: fadeUp 0.55s ease forwards;
+  @for $i from 1 through 9 {
+    &:nth-child(#{$i}) { animation-delay: #{$i * 0.07}s; }
+  }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────
+.spinner {
+  width: 15px; height: 15px;
+  border: 2px solid rgba($ink, 0.12);
+  border-top-color: $green;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+// ── Layout ────────────────────────────────────────────────────────
 .layout {
   display: flex;
   min-height: 100vh;
 }
 
-// Sidebar
+// ── Sidebar ───────────────────────────────────────────────────────
 .sidebar {
-  width: 240px;
-  background: #fff;
+  width: 232px;
+  background: $sidebar-bg;
   border-right: 1px solid $border;
   display: flex;
   flex-direction: column;
@@ -198,30 +121,38 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sidebar-logo {
-  padding: 24px;
+  padding: 22px 20px;
   border-bottom: 1px solid $border;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
 }
 
 .logo-mark {
   font-family: 'DM Serif Display', serif;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   color: $ink;
   letter-spacing: -0.02em;
 }
 
 .logo-sub {
   font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: $ink3;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
-// Sidebar Navigation
 .sidebar-nav {
   flex: 1;
-  padding: 16px 12px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -230,68 +161,71 @@ h1, h2, h3, h4, h5, h6 {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 9px;
+  padding: 9px 12px;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: $ink2;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
   border: none;
   background: transparent;
   cursor: pointer;
   text-align: left;
   font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.01em;
 
-  svg { flex-shrink: 0; opacity: 0.7; }
+  svg { flex-shrink: 0; opacity: 0.55; transition: opacity 0.12s; }
 
   &:hover {
-    background: rgba($ink, 0.04);
+    background: rgba($ink, 0.05);
     color: $ink;
+    svg { opacity: 0.8; }
   }
 
   &.active {
     background: $green-light;
     color: $green;
     font-weight: 600;
-    svg { opacity: 1; }
+    svg { opacity: 1; color: $green; }
   }
 }
 
 .sidebar-bottom {
-  padding: 16px;
+  padding: 14px;
   border-top: 1px solid $border;
 }
 
 .plan-badge {
-  background: $bg;
+  background: $bg3;
   border: 1px solid $border;
-  border-radius: 8px;
+  border-radius: 7px;
   padding: 10px 12px;
   margin-bottom: 8px;
 }
 
 .plan-name {
-  font-size: 0.7rem;
+  font-size: 0.67rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   color: $ink3;
   font-weight: 600;
 }
 
 .plan-usage {
-  font-size: 0.85rem;
-  color: $ink;
-  margin-top: 2px;
+  font-size: 0.82rem;
+  color: $ink2;
+  margin-top: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-// Main Content Area
+// ── Main Area ─────────────────────────────────────────────────────
 .main {
   flex: 1;
-  margin-left: 240px;
+  margin-left: 232px;
   background: $bg;
   min-height: 100vh;
   display: flex;
@@ -299,29 +233,28 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .topbar {
-  height: 60px;
+  height: 56px;
   border-bottom: 1px solid $border;
   display: flex;
   align-items: center;
-  padding: 0 48px;
-  background: rgba(#fff, 0.8);
-  backdrop-filter: blur(8px);
+  padding: 0 40px;
+  background: rgba($bg, 0.88);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 20;
 }
 
 .topbar-title {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: $ink3;
 }
 
-// Page Container
 .page {
-  padding: 32px 48px;
+  padding: 32px 40px;
   flex: 1;
 }
 
@@ -332,146 +265,196 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   gap: 12px;
   font-family: 'DM Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: $ink3;
+  background: $bg;
 }
 
-// ── Cards & Containers ────────────────────────────────────────────
+// ── Cards ─────────────────────────────────────────────────────────
 .card {
-  background: #fff;
+  background: $bg2;
   border: 1px solid $border;
   border-radius: 10px;
-  padding: 24px;
+  padding: 22px;
   margin-bottom: 16px;
-  
+
   &-title {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: $ink;
     margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 8px;
-    svg { color: $green; }
+    svg { color: $green; opacity: 0.8; }
   }
 }
 
 .stat-card {
-  background: #fff;
+  background: $bg2;
   border: 1px solid $border;
   border-radius: 10px;
-  padding: 24px;
+  padding: 22px;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s, transform 0.2s;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    transform: translateY(-1px);
+    border-color: $border2;
   }
 
-  &.green { border-top: 3px solid $green; }
-  &.amber { border-top: 3px solid $gold; }
+  &.green { border-top: 2px solid $green; }
+  &.amber { border-top: 2px solid $gold; }
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   color: $ink3;
-  margin-bottom: 8px;
-  font-weight: 500;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .stat-value {
   font-family: 'DM Serif Display', serif;
-  font-size: 2rem;
+  font-size: 1.9rem;
   color: $ink;
   line-height: 1;
   margin-bottom: 4px;
 }
 
 .stat-sub {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: $ink3;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
-// ── Forms ──────────────────────────────────────────────────────────
+// ── Progress ──────────────────────────────────────────────────────
+.progress-bar {
+  height: 3px;
+  background: rgba($ink, 0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $green;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  &.amber { background: $gold; }
+  &.red   { background: $red; }
+}
+
+// ── Forms ─────────────────────────────────────────────────────────
 .form-group { margin-bottom: 16px; }
 
 .form-label {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: $ink2;
   margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 
 .form-input {
   width: 100%;
-  padding: 10px 14px;
-  background: #fff;
-  border: 1px solid $border;
-  border-radius: 6px;
-  font-size: 0.95rem;
+  padding: 10px 13px;
+  background: $bg3;
+  border: 1px solid $border2;
+  border-radius: 7px;
+  font-size: 0.9rem;
   font-family: 'DM Sans', sans-serif;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s, box-shadow 0.15s;
   color: $ink;
 
   &:focus {
     outline: none;
     border-color: $green;
     box-shadow: 0 0 0 3px rgba($green, 0.1);
+    background: $bg2;
   }
-  
-  &::placeholder { color: $ink3; opacity: 0.6; }
+
+  &::placeholder { color: $ink3; opacity: 0.7; }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
 }
 
 .form-select {
   display: inline-block;
-  padding: 8px 12px;
-  font-size: 0.85rem;
+  padding: 7px 11px;
+  font-size: 0.83rem;
   font-family: 'DM Sans', sans-serif;
-  border: 1px solid $border;
+  border: 1px solid $border2;
   border-radius: 6px;
-  background: #fff;
+  background: $bg3;
   color: $ink;
   cursor: pointer;
-  
+
   &:focus {
     outline: none;
     border-color: $green;
   }
 }
 
-// ── Buttons ────────────────────────────────────────────────────────
+// ── Buttons ───────────────────────────────────────────────────────
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  gap: 7px;
+  border-radius: 7px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   border: 1px solid transparent;
   font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
 
   &-primary {
-    background: $ink;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: $green;
     color: #fff;
-    padding: 10px 20px;
-    &:hover { background: lighten($ink, 10%); }
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid $green;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.12s;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+
+    &:hover { background: $green2; border-color: $green2; transform: translateY(-1px); }
+    &:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   }
 
   &-ghost {
     background: transparent;
     color: $ink2;
-    border-color: $border;
+    border-color: $border2;
     padding: 8px 14px;
-    &:hover { border-color: $ink; color: $ink; }
+    &:hover { border-color: $ink3; color: $ink; background: rgba($ink, 0.04); }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 
   &-danger {
@@ -483,12 +466,35 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   &-sm {
-    padding: 6px 12px;
-    font-size: 0.8rem;
+    padding: 5px 11px;
+    font-size: 0.78rem;
+    border-radius: 6px;
   }
 }
 
-// ── Tables ──────────────────────────────────────────────────────────
+// .btn-primary as standalone class (used in some files directly)
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: $green;
+  color: #fff;
+  padding: 9px 18px;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  border: 1px solid $green;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+
+  &:hover { background: $green2; border-color: $green2; transform: translateY(-1px); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+}
+
+// ── Tables ────────────────────────────────────────────────────────
 .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -497,93 +503,79 @@ h1, h2, h3, h4, h5, h6 {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 
   th {
     text-align: left;
-    padding: 12px 16px;
-    font-size: 0.7rem;
+    padding: 10px 16px;
+    font-size: 0.67rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.09em;
     color: $ink3;
     border-bottom: 1px solid $border;
-    font-weight: 600;
-    background: #fff;
+    font-weight: 700;
+    background: $bg2;
   }
 
   td {
-    padding: 16px;
-    border-bottom: 1px solid rgba($border, 0.6);
+    padding: 14px 16px;
+    border-bottom: 1px solid $border;
     vertical-align: middle;
     color: $ink2;
   }
 
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba($bg, 0.5); }
+
+  tr:hover td { background: rgba($ink, 0.025); }
 }
 
-// ── Badges ─────────────────────────────────────────────────────────
+// ── Badges ────────────────────────────────────────────────────────
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: 4px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   font-family: 'DM Mono', monospace;
   letter-spacing: 0.02em;
 
-  &-blue { background: #E8F0FE; color: #1967D2; }
-  &-green { background: rgba($green, 0.1); color: $green; }
-  &-amber { background: rgba($gold, 0.1); color: $gold; }
-  &-red { background: rgba($red, 0.1); color: $red; }
+  &-blue  { background: rgba(70, 130, 220, 0.12); color: #7AABF0; }
+  &-green { background: rgba($green, 0.12);        color: $green; }
+  &-amber { background: rgba($gold, 0.12);          color: $gold; }
+  &-red   { background: rgba($red, 0.12);           color: $red; }
 }
 
-// ── Specific UI Components ─────────────────────────────────────────
+// ── Specific Components ───────────────────────────────────────────
 .api-key-box {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: $bg;
-  border: 1px solid $border;
+  background: $bg3;
+  border: 1px solid $border2;
   padding: 10px 14px;
-  border-radius: 6px;
+  border-radius: 7px;
 }
 
 .api-key-text {
   font-family: 'DM Mono', monospace;
-  font-size: 0.85rem;
-  color: $ink;
+  font-size: 0.82rem;
+  color: $green;
   flex: 1;
   user-select: all;
+  letter-spacing: 0.01em;
 }
 
 .code-block {
   background: $code-bg;
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 16px;
   font-family: 'DM Mono', monospace;
-  font-size: 0.75rem;
-  line-height: 1.7;
-  color: #A8A89C;
+  font-size: 0.73rem;
+  line-height: 1.75;
+  color: #7A9A7A;
   overflow-x: auto;
-  border: 1px solid #333;
-}
-
-.progress-bar {
-  height: 4px;
-  background: rgba(0,0,0,0.05);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: auto;
-}
-
-.progress-fill {
-  height: 100%;
-  background: $green;
-  transition: width 0.5s ease;
-  &.amber { background: $gold; }
-  &.red { background: $red; }
+  border: 1px solid $border;
 }
 
 .empty-state {
@@ -592,69 +584,111 @@ table {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 60px 24px;
+  padding: 56px 24px;
   color: $ink3;
-  
-  svg { margin-bottom: 16px; color: $border; opacity: 0.5; }
-  p { max-width: 320px; line-height: 1.6; }
+
+  svg { margin-bottom: 14px; color: $ink3; opacity: 0.25; }
+  p   { max-width: 300px; line-height: 1.65; font-size: 0.875rem; }
 }
 
-// ── Grid Utilities ─────────────────────────────────────────────────
+// ── Grid Utilities ────────────────────────────────────────────────
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 22px;
 }
 
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 14px;
 }
 
 .flex-center { display: flex; align-items: center; }
-.gap-2 { gap: 8px; }
-.mb-6 { margin-bottom: 24px; }
+.gap-2       { gap: 8px; }
+.mb-6        { margin-bottom: 24px; }
 
-// ── Auth Card (Minimal) ────────────────────────────────────────────
+// ── Auth Pages ────────────────────────────────────────────────────
 .auth-page {
   min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px; background: $bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: $bg;
 }
 
 .auth-card {
-  width: 100%; max-width: 400px;
-  background: #fff; padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  background: $bg2;
+  padding: 40px;
   border: 1px solid $border;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+  animation: fadeUp 0.5s ease both;
+  text-align: left;
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-bottom: 8px;
+  text-decoration: none;
+
+  img  { width: 28px; height: 28px; object-fit: contain; }
+  span {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.35rem;
+    color: $ink;
+    letter-spacing: -0.01em;
+  }
+}
+
+.auth-tagline {
   text-align: center;
-  
-  .auth-logo { margin-bottom: 24px; font-family: 'DM Serif Display'; font-size: 1.4rem; color: $ink; }
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: $ink3;
+  margin-bottom: 30px;
 }
 
-// ── Animations ─────────────────────────────────────────────────────
-.spinner {
-  width: 16px; height: 16px;
-  border: 2px solid rgba($ink, 0.2);
-  border-top-color: $green;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  display: inline-block;
+.auth-switch {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 0.83rem;
+  color: $ink3;
+  a {
+    color: $green;
+    text-decoration: none;
+    font-weight: 500;
+    &:hover { text-decoration: underline; }
+  }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+// ── Recharts overrides ────────────────────────────────────────────
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical   line {
+  stroke: $border;
+}
 
-// ── Responsive ─────────────────────────────────────────────────────
-@media (max-width: 1000px) {
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+// ── Responsive ────────────────────────────────────────────────────
+@media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .grid-2 { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
-  .sidebar { display: none; } // Hidden for mobile simplicity
-  .main { margin-left: 0; }
-  .page { padding: 24px; }
-  .topbar { padding: 0 24px; }
+  .sidebar  { display: none; }
+  .main     { margin-left: 0; }
+  .page     { padding: 20px; }
+  .topbar   { padding: 0 20px; }
+  .grid-2   { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
