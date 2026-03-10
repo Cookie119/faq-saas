@@ -80,7 +80,7 @@ export default function Settings() {
           <pre style={{
             background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)',
             padding: '14px', fontSize: '0.72rem', color: 'var(--accent)', overflowX: 'auto', lineHeight: 1.7
-          }}>{`fetch("http://your-server/ask", {
+          }}>{`fetch("https://faq-saas.onrender.com/ask", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
