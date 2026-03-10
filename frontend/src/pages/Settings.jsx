@@ -34,53 +34,53 @@ export default function Settings() {
 
   return (
     <div className="page">
-      <h1 style={{ fontFamily: 'var(--font-head)', fontSize: '1.4rem', fontWeight: 800, marginBottom: 24 }}>
-        Settings
-      </h1>
+      <h1 className="page-title">Settings</h1>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
-        {/* Account */}
+        
+        {/* Account Information */}
         <div className="card">
           <div className="card-title">Account</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
               <div className="form-label">Company Name</div>
-              <div style={{ fontSize: '0.88rem', color: 'var(--text)' }}>{company?.name}</div>
+              <div style={{ fontSize: '0.88rem', color: 'var(--ink)' }}>{company?.name}</div>
             </div>
             <div>
               <div className="form-label">Plan</div>
-              <span className="badge badge-blue" style={{ textTransform: 'capitalize' }}>{company?.plan}</span>
+              <span className="badge badge-blue" style={{ textTransform: 'capitalize' }}>
+                {company?.plan}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* API Key */}
+        {/* API Key Management */}
         <div className="card">
           <div className="card-title">API Key</div>
-          <div className="text-muted mb-4">
-            Use this key in the <code style={{ color: 'var(--accent)' }}>X-API-Key</code> header when calling <code style={{ color: 'var(--accent)' }}>POST /ask</code> from your website.
-          </div>
+          <p className="text-muted" style={{ marginBottom: 16 }}>
+            Use this key in the <code style={{ color: 'var(--green)', fontFamily: 'DM Mono, monospace' }}>X-API-Key</code> header when calling <code style={{ color: 'var(--green)', fontFamily: 'DM Mono, monospace' }}>POST /ask</code> from your website.
+          </p>
+          
           <div className="api-key-box">
             <div className="api-key-text">{currentKey}</div>
-            <button className="btn btn-ghost btn-sm" onClick={copyKey}>
-              {copied ? <Check size={13} /> : <Copy size={13} />}
+            <button className="btn btn-ghost btn-sm" onClick={copyKey} style={{ padding: '6px 10px' }}>
+              {copied ? <Check size={14} /> : <Copy size={14} />}
             </button>
           </div>
+
           <div style={{ marginTop: 12 }}>
             <button className="btn btn-ghost btn-sm" onClick={rotateKey} disabled={rotating}>
-              {rotating ? <span className="spinner" /> : <RefreshCw size={13} />}
-              Rotate Key
+              {rotating ? <span className="spinner" /> : <RefreshCw size={14} />}
+              <span style={{ marginLeft: 6 }}>Rotate Key</span>
             </button>
           </div>
         </div>
 
-        {/* Usage example */}
+        {/* Integration Example */}
         <div className="card">
           <div className="card-title">Integration Example</div>
-          <pre style={{
-            background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)',
-            padding: '14px', fontSize: '0.72rem', color: 'var(--accent)', overflowX: 'auto', lineHeight: 1.7
-          }}>{`fetch("https://faq-saas.onrender.com/ask", {
+          <pre className="code-block">{`fetch("https://faq-saas.onrender.com/ask", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -93,13 +93,15 @@ export default function Settings() {
 })`}</pre>
         </div>
 
-        {/* Logout */}
+        {/* Session / Logout */}
         <div className="card">
           <div className="card-title">Session</div>
-          <button className="btn btn-danger" onClick={logout}>
-            <LogOut size={14} /> Sign Out
+          <button className="btn btn-danger btn-sm" onClick={logout}>
+            <LogOut size={14} />
+            Sign Out
           </button>
         </div>
+
       </div>
     </div>
   )

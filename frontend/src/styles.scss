@@ -1,0 +1,780 @@
+// ── Imports ───────────────────────────────────────────────────────
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+
+// ── Variables ─────────────────────────────────────────────────────
+ $bg: #FAFAF8;
+ $ink: #111110;
+ $ink2: #3a3a38;
+ $ink3: #7a7a76;
+ $green: #2D6A4F;
+ $green2: #1B4332;
+ $green-light: #D8F3DC;
+ $gold: #B57A1A;
+ $border: #E8E8E4;
+ $code-bg: #1A1A18;
+
+// ── Base ──────────────────────────────────────────────────────────
+:root {
+  --bg: #{$bg};
+  --ink: #{$ink};
+  --ink2: #{$ink2};
+  --ink3: #{$ink3};
+  --green: #{$green};
+  --green2: #{$green2};
+  --green-light: #{$green-light};
+  --gold: #{$gold};
+  --border: #{$border};
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ── Navigation ────────────────────────────────────────────────────
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 48px;
+  transition: all 0.3s ease;
+
+  &.scrolled {
+    background: rgba(250,250,248,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid $border;
+    padding: 14px 48px;
+  }
+
+  &-brand {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+
+  &-logo {
+    width: 32px; height: 32px; object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+  
+  &-brand:hover .nav-logo {
+    transform: rotate(-10deg) scale(1.05);
+  }
+
+  &-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: $ink;
+    letter-spacing: -0.02em;
+  }
+
+  &-links { display: flex; align-items: center; gap: 32px; }
+  
+  &-link {
+    font-size: 0.88rem; font-weight: 400; color: #555;
+    text-decoration: none; transition: color 0.2s;
+    &:hover { color: $ink; }
+  }
+
+  .btn-nav {
+    padding: 8px 20px; border-radius: 6px;
+    font-size: 0.88rem; font-weight: 500; cursor: pointer;
+    transition: all 0.2s; border: none;
+  }
+
+  .btn-outline {
+    background: transparent; color: $ink;
+    border: 1.5px solid #D0D0C8;
+    &:hover { border-color: $ink; }
+  }
+
+  .btn-dark {
+    background: $ink; color: #fff;
+    &:hover { background: $green; }
+  }
+}
+
+// ── Hero ───────────────────────────────────────────────────────────
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 120px 24px 80px;
+  text-align: center;
+  position: relative;
+
+  &-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 100px;
+    background: #F0F7F4; border: 1px solid #C8E0D8;
+    font-size: 0.78rem; font-weight: 500; color: $green;
+    margin-bottom: 32px;
+    
+    &::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: $green;
+      animation: blink 2s ease-in-out infinite;
+    }
+  }
+
+  &-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: $ink;
+    max-width: 800px;
+
+    em { font-style: italic; color: $green; }
+  }
+
+  &-sub {
+    margin-top: 24px;
+    font-size: 1.1rem; font-weight: 300; color: #666;
+    max-width: 520px; line-height: 1.7;
+  }
+
+  &-actions {
+    display: flex; gap: 12px; margin-top: 40px;
+  }
+
+  // Code Block
+  &-code {
+    margin-top: 64px; width: 100%; max-width: 600px;
+    background: $code-bg; border-radius: 12px;
+    overflow: hidden; text-align: left;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+
+    .code-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 12px 16px; background: #242420;
+      border-bottom: 1px solid #333;
+    }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-body {
+      padding: 20px 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem; line-height: 1.8; color: #A8A89C;
+    }
+  }
+}
+
+// Buttons
+.btn {
+  &-primary {
+    padding: 14px 32px; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 500; cursor: pointer;
+    background: $ink; color: #fff; border: none;
+    transition: all 0.2s; letter-spacing: -0.01em;
+    display: inline-flex; align-items: center; gap: 8px;
+    
+    &:hover { background: $green; transform: translateY(-1px); }
+  }
+  
+  &-ghost {
+    padding: 14px 32px; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 400; cursor: pointer;
+    background: transparent; color: #555;
+    border: 1.5px solid #D8D8D0; transition: all 0.2s;
+    
+    &:hover { border-color: $ink; color: $ink; }
+  }
+}
+
+// Code Syntax Colors
+.c-green { color: #74C69D; }
+.c-blue  { color: #74B0D4; }
+.c-str   { color: #E8C87C; }
+.c-dim   { color: #666; }
+
+// ── Sections ──────────────────────────────────────────────────────
+.section {
+  padding: 100px 24px;
+  
+  &-inner { max-width: 1100px; margin: 0 auto; }
+  &-label {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: $green; margin-bottom: 16px;
+  }
+  &-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    letter-spacing: -0.025em; line-height: 1.1; color: $ink;
+    margin-bottom: 16px;
+  }
+  &-sub {
+    font-size: 1rem; color: #777; line-height: 1.7;
+    max-width: 480px;
+  }
+}
+
+// ── Steps (Classic style) ─────────────────────────────────────────
+.steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; margin-top: 56px;
+  background: $border; border-radius: 12px; overflow: hidden;
+}
+
+.step {
+  background: $bg; padding: 40px 36px;
+  position: relative;
+  transition: background 0.3s ease;
+  
+  &:hover {
+    background: #fff;
+  }
+  
+  &-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3.5rem; color: $border;
+    line-height: 1; margin-bottom: 20px;
+    transition: color 0.3s ease;
+  }
+  &:hover .step-num { color: rgba($green, 0.2); }
+  
+  &-title {
+    font-size: 1rem; font-weight: 600; color: $ink;
+    margin-bottom: 10px; letter-spacing: -0.01em;
+  }
+  &-desc { font-size: 0.88rem; color: #777; line-height: 1.7; }
+  &-tag {
+    display: inline-block; margin-top: 16px;
+    padding: 4px 10px; border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem; background: #F0F7F4; color: $green;
+  }
+}
+
+// ── Features ───────────────────────────────────────────────────────
+.features-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; margin-top: 56px;
+}
+
+.feature {
+  padding: 32px; border-radius: 10px;
+  border: 1px solid $border;
+  transition: all 0.3s ease;
+  
+  &:hover { 
+    border-color: $green; 
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    .feature-icon { transform: scale(1.1); }
+  }
+  
+  &-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: #F0F7F4; display: flex; align-items: center;
+    justify-content: center; margin-bottom: 16px; color: $green;
+    transition: transform 0.3s ease;
+    svg { width: 20px; height: 20px; }
+  }
+  &-title {
+    font-size: 0.95rem; font-weight: 600; color: $ink;
+    margin-bottom: 8px; letter-spacing: -0.01em;
+  }
+  &-desc { font-size: 0.85rem; color: #777; line-height: 1.65; }
+}
+
+// ── Pricing ───────────────────────────────────────────────────────
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-top: 56px; align-items: start;
+}
+
+.pc {
+  border-radius: 12px; padding: 36px 32px;
+  border: 1.5px solid $border;
+  transition: all 0.3s ease;
+  
+  &:hover { 
+    border-color: #C0C0B8; 
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+  }
+  
+  &.hot {
+    border-color: $ink; background: $ink; color: #fff;
+    transform: scale(1.02);
+    &:hover { transform: scale(1.02) translateY(-5px); }
+  }
+
+  &-badge {
+    display: inline-block; padding: 4px 10px; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; background: $green; color: #fff;
+    margin-bottom: 12px;
+  }
+  
+  &-plan {
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #999; margin-bottom: 12px;
+  }
+  &.hot .plan-name { color: #666; }
+  
+  &-price {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3rem; letter-spacing: -0.03em; line-height: 1;
+    color: $ink; margin-bottom: 4px;
+  }
+  &.hot .plan-price { color: #fff; }
+  
+  &-period { font-size: 0.82rem; color: #999; margin-bottom: 28px; }
+  &.hot .plan-period { color: #666; }
+  
+  &-features { list-style: none; margin-bottom: 32px; }
+  &-features li {
+    font-size: 0.88rem; color: #555; padding: 7px 0;
+    border-bottom: 1px solid #F0F0EC;
+    display: flex; align-items: center; gap: 10px;
+  }
+  &.hot .pc-features li { color: #BBB; border-color: #222; }
+  &-features li::before { content: '—'; color: $green; font-weight: 700; flex-shrink: 0; }
+  &.hot .pc-features li::before { color: #74C69D; }
+  
+  &-btn {
+    width: 100%; padding: 12px; border-radius: 7px;
+    font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    transition: all 0.2s; border: 1.5px solid #D8D8D0;
+    background: transparent; color: $ink; letter-spacing: -0.01em;
+    
+    &:hover { border-color: $ink; }
+  }
+  &.hot .pc-btn {
+    background: #fff; color: $ink; border-color: #fff;
+    &:hover { background: $green-light; border-color: $green-light; }
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────
+footer {
+  border-top: 1px solid $border;
+  padding: 40px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-brand {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+  img { width: 24px; height: 24px; }
+}
+.footer-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem; color: $ink;
+}
+.footer-copy { font-size: 0.8rem; color: #AAA; }
+
+// ── Auth Pages (Login) ────────────────────────────────────────────
+.auth-page {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; background: $bg;
+}
+
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: #fff; padding: 48px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+  animation: fadeUp 0.6s ease both;
+}
+
+.auth-logo {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  
+  img { width: 32px; height: 32px; }
+  span { 
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem; color: $ink; 
+  }
+}
+
+.auth-tagline {
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem; color: $ink3;
+  margin-bottom: 32px;
+}
+
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 0.82rem; font-weight: 500;
+  color: #555; margin-bottom: 6px;
+}
+// ... existing variables ...
+
+.form-input {
+  width: 100%; padding: 12px 14px;
+  background: #FDFDF9; // Slightly off-white for input fields
+  border: 1px solid $border;
+  border-radius: 8px; 
+  font-size: 0.95rem;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s ease;
+  color: #111; // 👈 FIX: Ensures text is always visible
+
+  &:focus {
+    outline: none;
+    border-color: $green;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba($green, 0.1);
+  }
+  
+  &::placeholder { color: $ink3; opacity: 0.7; }
+  
+  &:disabled {
+    background: #f0f0f0;
+    color: #888;
+    cursor: not-allowed;
+  }
+}
+
+// ... rest of your scss ...
+
+.auth-switch {
+  text-align: center; margin-top: 24px;
+  font-size: 0.85rem; color: #777;
+  a { color: $green; text-decoration: none; font-weight: 500; &:hover { text-decoration: underline; } }
+}
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+// ── Animations ────────────────────────────────────────────────────
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+// Animation utility classes
+.fu  { opacity:0; animation: fadeUp 0.6s ease forwards; }
+.d1  { animation-delay: 0.1s; }
+.d2  { animation-delay: 0.2s; }
+.d3  { animation-delay: 0.3s; }
+.d4  { animation-delay: 0.4s; }
+.d5  { animation-delay: 0.5s; }
+
+// Stagger children animation for grids
+.stagger-up > * {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+  @for $i from 1 through 9 {
+    &:nth-child(#{$i}) { animation-delay: #{$i * 0.08}s; }
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .nav { padding: 16px 20px; }
+  .nav.scrolled { padding: 12px 20px; }
+  .nav-links { gap: 16px; }
+  .steps, .features-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: column; align-items: center; }
+  footer { flex-direction: column; gap: 12px; text-align: center; }
+  section { padding: 70px 20px; }
+}
+
+
+// ── Dashboard Specific ────────────────────────────────────────────
+.page {
+  padding: 100px 48px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem;
+  color: $ink3;
+}
+
+// Grids
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 1000px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .page { padding: 80px 20px 20px; }
+}
+
+// Cards
+.stat-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+  }
+
+  &.green { border-top: 3px solid $green; }
+  &.amber { border-top: 3px solid $gold; }
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $ink3;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  color: $ink;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-sub {
+  font-size: 0.78rem;
+  color: $ink3;
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  height: 4px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $green;
+  transition: width 0.5s ease;
+  &.amber { background: $gold; }
+  &.red { background: #E63946; }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 24px;
+  
+  &-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $ink;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    svg { color: $green; }
+  }
+}
+
+// Utility
+.flex-center { display: flex; align-items: center; }
+.text-muted { color: $ink3; font-size: 0.85rem; }
+.text-sm { font-size: 0.78rem; }
+.badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+  &-blue { background: #E8F0FE; color: #1967D2; }
+}
+
+
+// ... existing code ...
+
+// ── Table Styles ──────────────────────────────────────────────────
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $ink3;
+    border-bottom: 1px solid $border;
+    font-weight: 600;
+  }
+
+  td {
+    padding: 16px;
+    border-bottom: 1px solid rgba($border, 0.5);
+    vertical-align: middle;
+    color: $ink2;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba($bg, 0.5); }
+}
+
+// Form Select
+.form-select {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: #fff;
+  color: $ink;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  
+  &:focus {
+    outline: none;
+    border-color: $green;
+  }
+}
+
+// Extra Badges
+.badge {
+  &-green { background: rgba($green, 0.1); color: $green; }
+  &-amber { background: rgba($gold, 0.1); color: $gold; }
+}
+
+// Button variations
+.btn-danger {
+  background: transparent;
+  color: #E63946;
+  border: 1px solid rgba(230, 57, 70, 0.2);
+  
+  &:hover {
+    background: #E63946;
+    color: #fff;
+    border-color: #E63946;
+  }
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// ── Settings Page Specific ─────────────────────────────────────────
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+  letter-spacing: -0.02em;
+  color: $ink;
+  margin-bottom: 32px;
+}
+
+.api-key-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: $bg;
+  border: 1px solid $border;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.api-key-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem;
+  color: $ink;
+  flex: 1;
+  user-select: all; // Makes it easy to select the key
+}
+
+.code-block {
+  background: $code-bg;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: #A8A89C;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  border: 1px solid #333;
+}
+
+
+// ── Domain List Specific ───────────────────────────────────────────
+
+// Empty State Component
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+  color: $ink3;
+  
+  svg { 
+    margin-bottom: 16px; 
+    color: $border; 
+    width: 40px;
+    height: 40px;
+  }
+  
+  p { 
+    max-width: 320px; 
+    margin: 0; 
+    line-height: 1.6; 
+    font-size: 0.95rem;
+  }
+}
+
+// Extra Badges
+.badge-red { 
+  background: rgba(#E63946, 0.1); 
+  color: #E63946; 
+}
+
+// Utility Classes
+.text-green { color: $green; }
+.gap-2 { gap: 8px; }

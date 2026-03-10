@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Shield, RefreshCw, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+// Import SCSS in main entry file
 
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const PLANS = ['free', 'pro', 'enterprise']
@@ -10,13 +11,12 @@ export default function Admin() {
   const [email,     setEmail]     = useState(sessionStorage.getItem('admin_email') || '')
   const [secretKey, setSecretKey] = useState(sessionStorage.getItem('admin_key') || '')
   const [authed, setAuthed] = useState(
-  !!(sessionStorage.getItem('admin_email') && sessionStorage.getItem('admin_key'))
-)
+    !!(sessionStorage.getItem('admin_email') && sessionStorage.getItem('admin_key'))
+  )
   const [companies, setCompanies] = useState([])
   const [stats,     setStats]     = useState(null)
   const [loading,   setLoading]   = useState(false)
 
-  // Auto-login on page refresh if session exists
   useEffect(() => {
     const savedEmail = sessionStorage.getItem('admin_email')
     const savedKey   = sessionStorage.getItem('admin_key')
@@ -102,14 +102,14 @@ export default function Admin() {
     setSecretKey('')
   }
 
-  // ── Login gate ─────────────────────────────────────────────────────────────
+  // ── Login Gate ────────────────────────────────────────────────────────
   if (!authed) {
     return (
       <div className="auth-page">
         <div style={{ width: '100%', maxWidth: 440 }}>
-          <div className="flex-center gap-2 mb-6">
-            <Shield size={20} style={{ color: 'var(--accent)' }} />
-            <h1 style={{ fontFamily: 'var(--font-head)', fontSize: '1.4rem', fontWeight: 800 }}>
+          <div className="flex-center mb-6" style={{ justifyContent: 'center' }}>
+            <Shield size={20} style={{ color: '#2D6A4F', marginRight: 8 }} />
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.8rem', color: '#111' }}>
               Admin Access
             </h1>
           </div>
@@ -136,16 +136,16 @@ export default function Admin() {
               />
             </div>
             <button
-              className="btn btn-primary"
+              className="btn-primary"
               style={{ width: '100%', justifyContent: 'center' }}
               onClick={load}
               disabled={loading || !email || !secretKey}
             >
-              {loading ? <span className="spinner" /> : <><Shield size={14} /> Access Admin Panel</>}
+              {loading ? <span className="spinner" /> : <><Shield size={14} style={{marginRight: 6}} /> Access Admin Panel</>}
             </button>
-            <div className="text-muted" style={{ marginTop: 12, fontSize: '0.72rem' }}>
-              Credentials set via <code style={{ color: 'var(--accent)' }}>ADMIN_EMAIL</code> and{' '}
-              <code style={{ color: 'var(--accent)' }}>ADMIN_SECRET_KEY_HASH</code> in your .env
+            <div className="text-muted" style={{ marginTop: 16, fontSize: '0.75rem', textAlign: 'center' }}>
+              Credentials set via <code style={{ color: '#2D6A4F', background: 'rgba(45,106,79,0.1)', padding: '2px 4px', borderRadius: '4px' }}>ADMIN_EMAIL</code> and{' '}
+              <code style={{ color: '#2D6A4F', background: 'rgba(45,106,79,0.1)', padding: '2px 4px', borderRadius: '4px' }}>ADMIN_SECRET_KEY_HASH</code>
             </div>
           </div>
         </div>
@@ -153,18 +153,18 @@ export default function Admin() {
     )
   }
 
-  // ── Admin panel ────────────────────────────────────────────────────────────
+  // ── Admin Panel ────────────────────────────────────────────────────────
   return (
     <div className="page">
       <div className="flex-center mb-6" style={{ justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-head)', fontSize: '1.4rem', fontWeight: 800 }}>
-            <Shield size={18} style={{ display: 'inline', marginRight: 8, color: 'var(--accent)' }} />
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.8rem', color: '#111', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Shield size={20} style={{ color: '#2D6A4F' }} />
             Admin Panel
           </h1>
           <div className="text-muted">Logged in as {email} · {companies.length} companies</div>
         </div>
-        <div className="flex-center gap-2">
+        <div className="flex-center" style={{ gap: 8 }}>
           <button className="btn btn-ghost btn-sm" onClick={refresh} disabled={loading}>
             <RefreshCw size={13} /> Refresh
           </button>
@@ -199,7 +199,7 @@ export default function Admin() {
         </div>
       )}
 
-      <div className="card" style={{ padding: 0 }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="table-wrap">
           <table>
             <thead>
@@ -210,28 +210,27 @@ export default function Admin() {
                 <th>This Month</th>
                 <th>All Time</th>
                 <th>Joined</th>
-                <th></th>
+                <th style={{ width: 60 }}></th>
               </tr>
             </thead>
             <tbody>
               {companies.map(c => (
                 <tr key={c.id}>
                   <td>
-                    <div style={{ fontWeight: 600, fontFamily: 'var(--font-head)' }}>{c.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-3)' }}>{c.email}</div>
+                    <div style={{ fontWeight: 600, fontFamily: "'DM Serif Display', serif", color: '#111' }}>{c.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#7a7a76' }}>{c.email}</div>
                   </td>
                   <td>
                     <select
                       value={c.plan}
                       onChange={e => changePlan(c.id, e.target.value)}
                       className="form-select"
-                      style={{ width: 'auto', padding: '4px 8px', fontSize: '0.72rem' }}
                     >
                       {PLANS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </td>
                   <td>{c.domains}</td>
-                  <td style={{ color: c.questions_used > 400 ? 'var(--amber)' : 'var(--text)' }}>
+                  <td style={{ color: c.questions_used > 400 ? '#B57A1A' : '#3a3a38', fontWeight: 500 }}>
                     {c.questions_used}
                   </td>
                   <td>{c.total_questions}</td>

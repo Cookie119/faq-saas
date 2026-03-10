@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
+// Ensure your SCSS is imported in your main.jsx or App.jsx
 
 export default function Register() {
   const { login } = useAuth()
@@ -28,7 +29,11 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo">faqbot</div>
+        
+        <Link to="/" className="auth-logo">
+            <img src="/logo_green.svg" alt="Logo" />
+            <span>ginkgo</span>
+        </Link>
         <div className="auth-tagline">// deploy your first bot in 2 minutes</div>
 
         <form onSubmit={submit}>
@@ -64,7 +69,12 @@ export default function Register() {
               required
             />
           </div>
-          <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
+          
+          <button 
+            className="btn-primary" 
+            style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }} 
+            disabled={loading}
+          >
             {loading ? <span className="spinner" /> : 'Create account →'}
           </button>
         </form>

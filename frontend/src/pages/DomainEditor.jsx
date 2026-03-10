@@ -91,9 +91,7 @@ export default function DomainEditor() {
   const addOrigin = () => {
     let origin = newOrigin.trim().toLowerCase()
     if (!origin) return
-    // Auto-add https:// if missing
     if (!origin.startsWith('http')) origin = 'https://' + origin
-    // Strip trailing slash
     origin = origin.replace(/\/$/, '')
     if (allowedOrigins.includes(origin)) {
       toast.error('Already added')
@@ -145,20 +143,21 @@ export default function DomainEditor() {
 
   return (
     <div className="page">
+      {/* Header */}
       <div className="flex-center mb-6" style={{ justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-head)', fontSize: '1.4rem', fontWeight: 800 }}>
+          <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.8rem', color: '#111' }}>
             {isNew(id) ? 'New Domain' : form.display_name || 'Edit Domain'}
           </h1>
           <div className="text-muted">
-            {isNew(id) ? 'Configure your bot identity and knowledge base' : `slug: ${form.slug}`}
+            {isNew(id) ? 'Configure your bot identity and knowledge base' : `ID: ${form.slug}`}
           </div>
         </div>
       </div>
 
-      <div className="grid-2" style={{ alignItems: 'start' }}>
-        {/* Left — config form */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="grid-2" style={{ alignItems: 'start', gap: '24px' }}>
+        {/* Left Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
           {/* Bot Identity */}
           <div className="card">
@@ -182,18 +181,16 @@ export default function DomainEditor() {
                 <label className="form-label">Tone</label>
                 <input className="form-input" placeholder="warm, helpful, concise" value={form.tone} onChange={f('tone')} />
               </div>
-              <div className="grid-2">
-                <div className="form-group">
-                  <label className="form-label">Language</label>
-                  <input className="form-input" placeholder="English" value={form.language} onChange={f('language')} />
-                </div>
+              <div className="form-group">
+                <label className="form-label">Language</label>
+                <input className="form-input" placeholder="English" value={form.language} onChange={f('language')} />
               </div>
               <div className="form-group">
                 <label className="form-label">Fallback Message</label>
                 <input className="form-input" placeholder="Please email support@yourco.com" value={form.fallback_msg} onChange={f('fallback_msg')} />
               </div>
-              <button className="btn btn-primary" type="submit" disabled={saving}>
-                {saving ? <span className="spinner" /> : <><Save size={14} /> {isNew(id) ? 'Create Domain' : 'Save Changes'}</>}
+              <button className="btn-primary" type="submit" disabled={saving} style={{ marginTop: '8px' }}>
+                {saving ? <span className="spinner" /> : <><Save size={14} style={{marginRight: 6}} /> {isNew(id) ? 'Create Domain' : 'Save Changes'}</>}
               </button>
             </form>
           </div>
@@ -202,30 +199,37 @@ export default function DomainEditor() {
           {!isNew(id) && (
             <div className="card">
               <div className="card-title">
-                <FileText size={13} style={{ display: 'inline', marginRight: 6 }} />Knowledge Base
+                <FileText size={14} style={{ marginRight: 8 }} /> Knowledge Base
               </div>
               {domain?.chunk_count > 0 && (
-                <div className="flex-center gap-2 mb-4" style={{ padding: '8px 12px', background: 'var(--bg-2)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
-                  <span className="text-green">●</span>
-                  <span style={{ fontSize: '0.8rem' }}>{domain.chunk_count} chunks indexed</span>
-                  <span className="text-muted" style={{ marginLeft: 'auto' }}>Updated {new Date(domain.updated_at).toLocaleDateString()}</span>
+                <div className="flex-center gap-2 mb-4" style={{ padding: '10px 14px', background: '#F0F7F4', borderRadius: '8px', border: '1px solid #D8E8E0' }}>
+                  <span style={{ color: '#2D6A4F', fontWeight: 600 }}>●</span>
+                  <span style={{ fontSize: '0.85rem', color: '#111' }}>{domain.chunk_count} chunks indexed</span>
+                  <span className="text-muted" style={{ marginLeft: 'auto', fontSize: '0.75rem' }}>Updated {new Date(domain.updated_at).toLocaleDateString()}</span>
                 </div>
               )}
               <div
-                className={`upload-zone ${file ? 'drag-over' : ''}`}
+                className="upload-zone"
                 onClick={() => fileRef.current?.click()}
                 onDragOver={e => e.preventDefault()}
                 onDrop={e => { e.preventDefault(); setFile(e.dataTransfer.files[0]) }}
+                style={{
+                  border: `2px dashed ${file ? '#2D6A4F' : '#D0D0C8'}`,
+                  borderRadius: '12px', padding: '32px',
+                  textAlign: 'center', cursor: 'pointer',
+                  background: file ? 'rgba(45, 106, 79, 0.03)' : 'transparent',
+                  transition: 'all 0.2s'
+                }}
               >
-                <div className="upload-icon"><Upload size={28} /></div>
-                <div className="upload-title">{file ? file.name : 'Drop your .md file here'}</div>
-                <div className="upload-sub">{file ? `${(file.size / 1024).toFixed(1)} KB` : 'or click to browse'}</div>
+                <div style={{ color: '#777', marginBottom: 8 }}><Upload size={24} /></div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 500, color: '#111' }}>{file ? file.name : 'Drop your .md file here'}</div>
+                <div className="text-muted" style={{ fontSize: '0.8rem', marginTop: 4 }}>{file ? `${(file.size / 1024).toFixed(1)} KB` : 'or click to browse'}</div>
               </div>
               <input ref={fileRef} type="file" accept=".md" style={{ display: 'none' }}
                 onChange={e => setFile(e.target.files[0])} />
               {file && (
-                <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={uploadFile} disabled={uploading}>
-                  {uploading ? <span className="spinner" /> : <><Upload size={14} /> Upload & Index</>}
+                <button className="btn-primary" style={{ marginTop: 12, width: '100%', justifyContent: 'center' }} onClick={uploadFile} disabled={uploading}>
+                  {uploading ? <span className="spinner" /> : <><Upload size={14} style={{marginRight: 6}} /> Upload & Index</>}
                 </button>
               )}
             </div>
@@ -235,28 +239,27 @@ export default function DomainEditor() {
           {!isNew(id) && (
             <div className="card">
               <div className="card-title">
-                <Shield size={13} style={{ display: 'inline', marginRight: 6 }} />Allowed Origins
+                <Shield size={14} style={{ marginRight: 8 }} /> Allowed Origins
               </div>
-              <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: 12 }}>
+              <div className="text-muted" style={{ fontSize: '0.8rem', marginBottom: 12 }}>
                 Restrict which websites can use this bot. Leave empty to allow all origins.
               </div>
 
-              {/* Origin list */}
               {allowedOrigins.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                   {allowedOrigins.map(origin => (
                     <div key={origin} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '6px 10px', background: 'var(--bg-2)',
-                      border: '1px solid var(--border)', borderRadius: 'var(--radius)',
-                      fontFamily: 'var(--font-mono)', fontSize: '0.75rem',
+                      padding: '8px 12px', background: '#FDFDF9',
+                      border: '1px solid #E8E8E4', borderRadius: '8px',
+                      fontFamily: "'DM Mono', monospace", fontSize: '0.8rem',
                     }}>
-                      <span style={{ color: 'var(--green)' }}>{origin}</span>
+                      <span style={{ color: '#2D6A4F' }}>{origin}</span>
                       <button
                         onClick={() => removeOrigin(origin)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7a7a76', padding: 2 }}
                       >
-                        <X size={13} />
+                        <X size={14} />
                       </button>
                     </div>
                   ))}
@@ -265,16 +268,15 @@ export default function DomainEditor() {
 
               {allowedOrigins.length === 0 && (
                 <div style={{
-                  padding: '8px 12px', marginBottom: 12,
-                  background: 'var(--bg-2)', borderRadius: 'var(--radius)',
-                  border: '1px solid var(--border)', fontSize: '0.75rem',
-                  color: 'var(--amber)',
+                  padding: '10px 14px', marginBottom: 12,
+                  background: '#FFF8E1', borderRadius: '8px',
+                  border: '1px solid #FFE082', fontSize: '0.8rem',
+                  color: '#B57A1A',
                 }}>
                   ⚠ No restrictions — any website can call this bot with your API key
                 </div>
               )}
 
-              {/* Add origin input */}
               <div style={{ display: 'flex', gap: 8 }}>
                 <input
                   className="form-input"
@@ -284,49 +286,75 @@ export default function DomainEditor() {
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addOrigin())}
                   style={{ flex: 1 }}
                 />
-                <button className="btn btn-ghost btn-sm" onClick={addOrigin} disabled={!newOrigin.trim()}>
-                  <Plus size={14} /> Add
+                <button className="btn-ghost" onClick={addOrigin} disabled={!newOrigin.trim()}>
+                  <Plus size={14} />
                 </button>
               </div>
 
               <button
-                className="btn btn-primary"
-                style={{ marginTop: 12 }}
+                className="btn-primary"
+                style={{ marginTop: 12, width: '100%', justifyContent: 'center' }}
                 onClick={saveOrigins}
                 disabled={savingOrigins}
               >
-                {savingOrigins ? <span className="spinner" /> : <><Shield size={14} /> Save Origins</>}
+                {savingOrigins ? <span className="spinner" /> : <><Shield size={14} style={{marginRight: 6}} /> Save Origins</>}
               </button>
             </div>
           )}
         </div>
 
-        {/* Right — bot tester */}
+        {/* Right Column — Bot Tester */}
         {!isNew(id) && (
-          <div className="card" style={{ position: 'sticky', top: 76 }}>
+          <div className="card" style={{ position: 'sticky', top: 90, display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 110px)' }}>
             <div className="card-title">
-              <Bot size={13} style={{ display: 'inline', marginRight: 6 }} />Live Bot Tester
+              <Bot size={14} style={{ marginRight: 8 }} /> Live Bot Tester
             </div>
             {domain?.chunk_count > 0 ? (
               <>
-                <div className="chat-window" ref={chatRef}>
+                <div 
+                  ref={chatRef}
+                  style={{
+                    flex: 1, overflowY: 'auto', padding: '16px',
+                    background: '#FAFAF8', borderRadius: '8px',
+                    border: '1px solid #E8E8E4',
+                    display: 'flex', flexDirection: 'column', gap: '12px',
+                    marginBottom: '12px'
+                  }}
+                >
                   {messages.length === 0 && (
-                    <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: '0.78rem', margin: 'auto' }}>
+                    <div style={{ textAlign: 'center', color: '#7a7a76', fontSize: '0.85rem', margin: 'auto' }}>
                       Ask a question to test your bot
                     </div>
                   )}
                   {messages.map((m, i) => (
-                    <div key={i} className={`chat-msg ${m.role === 'user' ? 'user' : 'bot'}`}>
-                      <div className="chat-bubble">{m.content}</div>
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+                    }}>
+                      <div style={{
+                        maxWidth: '80%', padding: '10px 14px',
+                        borderRadius: m.role === 'user' ? '12px 12px 0 12px' : '12px 12px 12px 0',
+                        background: m.role === 'user' ? '#111' : '#fff',
+                        color: m.role === 'user' ? '#fff' : '#111',
+                        border: m.role === 'user' ? 'none' : '1px solid #E8E8E4',
+                        fontSize: '0.9rem', lineHeight: 1.5,
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                      }}>
+                        {m.content}
+                      </div>
                     </div>
                   ))}
                   {asking && (
-                    <div className="chat-msg bot">
-                      <div className="chat-bubble"><span className="spinner" /></div>
-                    </div>
+                     <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <div style={{
+                           padding: '12px', background: '#fff', borderRadius: '12px',
+                           border: '1px solid #E8E8E4'
+                        }}>
+                          <span className="spinner" />
+                        </div>
+                     </div>
                   )}
                 </div>
-                <form onSubmit={askQuestion} className="chat-input-row">
+                <form onSubmit={askQuestion} style={{ display: 'flex', gap: 8 }}>
                   <input
                     className="form-input"
                     placeholder="Ask something..."
@@ -334,15 +362,15 @@ export default function DomainEditor() {
                     onChange={e => setQuestion(e.target.value)}
                     disabled={asking}
                   />
-                  <button className="btn btn-primary" type="submit" disabled={asking || !question.trim()}>
-                    <Send size={13} />
+                  <button className="btn-primary" type="submit" disabled={asking || !question.trim()}>
+                    <Send size={16} />
                   </button>
                 </form>
               </>
             ) : (
-              <div className="empty-state">
-                <FileText />
-                <p>Upload a .md file first to enable the bot tester</p>
+              <div className="text-muted" style={{ textAlign: 'center', padding: '40px 0' }}>
+                <FileText style={{ margin: '0 auto 12px', opacity: 0.3 }} size={32} />
+                <p style={{ fontSize: '0.85rem' }}>Upload a .md file first to enable the bot tester</p>
               </div>
             )}
           </div>

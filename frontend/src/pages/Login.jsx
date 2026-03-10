@@ -28,8 +28,12 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo">faqbot</div>
-        <div className="auth-tagline">// multi-tenant FAQ intelligence</div>
+        
+        <Link to="/" className="auth-logo">
+            <img src="/logo_green.svg" alt="Logo" />
+            <span>ginkgo</span>
+        </Link>
+        <div className="auth-tagline">// Multi-tenant FAQ intelligence</div>
 
         <form onSubmit={submit}>
           <div className="form-group">
@@ -54,7 +58,12 @@ export default function Login() {
               required
             />
           </div>
-          <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
+          
+          <button 
+            className="btn-primary" 
+            style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }} 
+            disabled={loading}
+          >
             {loading ? <span className="spinner" /> : 'Sign in →'}
           </button>
         </form>

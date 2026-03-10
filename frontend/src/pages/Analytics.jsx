@@ -4,18 +4,20 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, BarChart, Bar, CartesianGrid
 } from 'recharts'
-import { TrendingUp, MessageSquare, Database, Zap } from 'lucide-react'
+import { TrendingUp, MessageSquare, Database } from 'lucide-react'
 
+// Custom Tooltip using standard styles
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
     <div style={{
-      background: 'var(--bg-2)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)', padding: '8px 12px',
-      fontFamily: 'var(--font-mono)', fontSize: '0.75rem'
+      background: '#fff', border: '1px solid #E8E8E4',
+      borderRadius: '8px', padding: '8px 12px',
+      fontFamily: "'DM Mono', monospace", fontSize: '0.75rem',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
     }}>
-      <div style={{ color: 'var(--text-3)', marginBottom: 4 }}>{label}</div>
-      <div style={{ color: 'var(--accent)' }}>{payload[0].value} questions</div>
+      <div style={{ color: '#7a7a76', marginBottom: 4 }}>{label}</div>
+      <div style={{ color: '#2D6A4F', fontWeight: 600 }}>{payload[0].value} questions</div>
     </div>
   )
 }
@@ -31,9 +33,14 @@ export default function Analytics() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <div className="loading-page"><span className="spinner" /></div>
+  if (loading) return (
+    <div className="loading-page">
+      <span className="spinner" />
+      <span>Loading...</span>
+    </div>
+  )
 
-  // Build daily chart data from recent questions
+  // Build daily chart data
   const dailyMap = {}
   analytics?.recent_questions?.forEach(q => {
     const day = new Date(q.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -43,7 +50,7 @@ export default function Analytics() {
     .map(([date, count]) => ({ date, count }))
     .slice(-14)
 
-  // Domain bar chart
+  // Domain bar chart data
   const domainData = (analytics?.top_domains || []).map(d => ({
     name: d.domain.length > 14 ? d.domain.slice(0, 14) + '…' : d.domain,
     questions: d.questions
@@ -54,12 +61,13 @@ export default function Analytics() {
 
   return (
     <div className="page">
+      {/* Header */}
       <div className="mb-6">
-        <h1 style={{ fontFamily: 'var(--font-head)', fontSize: '1.4rem', fontWeight: 800 }}>Analytics</h1>
-        <div className="text-muted">Last 30 days</div>
+        <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.8rem', color: '#111' }}>Analytics</h1>
+        <div className="text-muted">Last 30 days performance</div>
       </div>
 
-      {/* Stats row */}
+      {/* Stats Row */}
       <div className="stats-grid" style={{ marginBottom: 24 }}>
         <div className="stat-card">
           <div className="stat-label">This Month</div>
@@ -86,61 +94,65 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* Charts row */}
+      {/* Charts Row */}
       <div className="grid-2" style={{ marginBottom: 24 }}>
-        {/* Daily activity */}
+        {/* Daily Activity Chart */}
         <div className="card">
-          <div className="card-title"><TrendingUp size={13} style={{ display: 'inline', marginRight: 6 }} />Daily Activity</div>
+          <div className="card-title">
+            <TrendingUp size={14} style={{ marginRight: 8 }} /> Daily Activity
+          </div>
           {dailyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={180}>
               <AreaChart data={dailyData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <defs>
                   <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--accent)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
+                    <stop offset="5%"  stopColor="#2D6A4F" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#2D6A4F" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--text-3)', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--text-3)', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#7a7a76', fontFamily: "'DM Mono', monospace" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#7a7a76', fontFamily: "'DM Mono', monospace" }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#areaGrad)" />
+                <Area type="monotone" dataKey="count" stroke="#2D6A4F" strokeWidth={2} fill="url(#areaGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="empty-state" style={{ padding: '40px 0' }}>
-              <TrendingUp style={{ margin: '0 auto 8px', display: 'block', opacity: 0.3 }} />
-              <p>No activity yet this month</p>
+            <div className="text-muted" style={{ textAlign: 'center', padding: '40px 0' }}>
+              <TrendingUp style={{ margin: '0 auto 8px', display: 'block', opacity: 0.3 }} size={24} />
+              <p style={{ fontSize: '0.85rem' }}>No activity yet this month</p>
             </div>
           )}
         </div>
 
-        {/* Questions per domain */}
+        {/* Questions per Domain Chart */}
         <div className="card">
-          <div className="card-title"><Database size={13} style={{ display: 'inline', marginRight: 6 }} />Questions per Domain</div>
+          <div className="card-title">
+            <Database size={14} style={{ marginRight: 8 }} /> Questions per Domain
+          </div>
           {domainData.length > 0 ? (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={domainData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-3)', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--text-3)', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E4" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#7a7a76', fontFamily: "'DM Mono', monospace" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#7a7a76', fontFamily: "'DM Mono', monospace" }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="questions" fill="var(--accent)" radius={[3, 3, 0, 0]} opacity={0.85} />
+                <Bar dataKey="questions" fill="#2D6A4F" radius={[3, 3, 0, 0]} opacity={0.85} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="empty-state" style={{ padding: '40px 0' }}>
-              <Database style={{ margin: '0 auto 8px', display: 'block', opacity: 0.3 }} />
-              <p>No domain activity yet</p>
+            <div className="text-muted" style={{ textAlign: 'center', padding: '40px 0' }}>
+              <Database style={{ margin: '0 auto 8px', display: 'block', opacity: 0.3 }} size={24} />
+              <p style={{ fontSize: '0.85rem' }}>No domain activity yet</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Recent questions log */}
+      {/* Recent Questions Table */}
       <div className="card" style={{ padding: 0 }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #E8E8E4' }}>
           <div className="card-title" style={{ marginBottom: 0 }}>
-            <MessageSquare size={13} style={{ display: 'inline', marginRight: 6 }} />Recent Questions
+            <MessageSquare size={14} style={{ marginRight: 8 }} /> Recent Questions
           </div>
         </div>
         {analytics?.recent_questions?.length > 0 ? (
@@ -157,7 +169,7 @@ export default function Analytics() {
                 {analytics.recent_questions.map((q, i) => (
                   <tr key={i}>
                     <td style={{ maxWidth: 400 }}>
-                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#111' }}>
                         {q.question}
                       </div>
                     </td>
@@ -169,8 +181,8 @@ export default function Analytics() {
             </table>
           </div>
         ) : (
-          <div className="empty-state">
-            <p>Questions will appear here after your first /ask call</p>
+          <div className="text-muted" style={{ textAlign: 'center', padding: '40px 0' }}>
+            <p style={{ fontSize: '0.85rem' }}>Questions will appear here after your first /ask call</p>
           </div>
         )}
       </div>
