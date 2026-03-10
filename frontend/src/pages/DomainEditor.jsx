@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { domainsAPI, askAPI } from '../api/client'
 import { useAuth } from '../context/AuthContext'
-import { Upload, Send, Bot, FileText, Save } from 'lucide-react'
+import { Upload, Send, Bot, FileText, Save, Shield, Plus, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const isNew = (id) => id === 'new'
@@ -17,10 +17,15 @@ export default function DomainEditor() {
     slug: '', display_name: '', persona: '', tone: 'helpful and professional',
     language: 'English', fallback_msg: '',
   })
-  const [domain,  setDomain]  = useState(null)
-  const [saving,  setSaving]  = useState(false)
+  const [domain,    setDomain]    = useState(null)
+  const [saving,    setSaving]    = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [file,    setFile]    = useState(null)
+  const [file,      setFile]      = useState(null)
+
+  // Allowed origins state
+  const [allowedOrigins,  setAllowedOrigins]  = useState([])
+  const [newOrigin,       setNewOrigin]       = useState('')
+  const [savingOrigins,   setSavingOrigins]   = useState(false)
 
   // Bot tester state
   const [messages,  setMessages]  = useState([])
@@ -39,6 +44,7 @@ export default function DomainEditor() {
           persona: d.persona || '', tone: d.tone || 'helpful and professional',
           language: d.language || 'English', fallback_msg: d.fallback_msg || '',
         })
+        setAllowedOrigins(d.allowed_origins || [])
       })
     }
   }, [id])
@@ -82,6 +88,40 @@ export default function DomainEditor() {
     }
   }
 
+  const addOrigin = () => {
+    let origin = newOrigin.trim().toLowerCase()
+    if (!origin) return
+    // Auto-add https:// if missing
+    if (!origin.startsWith('http')) origin = 'https://' + origin
+    // Strip trailing slash
+    origin = origin.replace(/\/$/, '')
+    if (allowedOrigins.includes(origin)) {
+      toast.error('Already added')
+      return
+    }
+    setAllowedOrigins(p => [...p, origin])
+    setNewOrigin('')
+  }
+
+  const removeOrigin = (origin) => {
+    setAllowedOrigins(p => p.filter(o => o !== origin))
+  }
+
+  const saveOrigins = async () => {
+    setSavingOrigins(true)
+    try {
+      await domainsAPI.update(id, { allowed_origins: allowedOrigins })
+      toast.success(allowedOrigins.length === 0
+        ? 'Restrictions removed — all origins allowed'
+        : `${allowedOrigins.length} allowed origin(s) saved`
+      )
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Save failed')
+    } finally {
+      setSavingOrigins(false)
+    }
+  }
+
   const askQuestion = async (e) => {
     e.preventDefault()
     if (!question.trim() || !domain?.slug) return
@@ -110,13 +150,17 @@ export default function DomainEditor() {
           <h1 style={{ fontFamily: 'var(--font-head)', fontSize: '1.4rem', fontWeight: 800 }}>
             {isNew(id) ? 'New Domain' : form.display_name || 'Edit Domain'}
           </h1>
-          <div className="text-muted">{isNew(id) ? 'Configure your bot identity and knowledge base' : `slug: ${form.slug}`}</div>
+          <div className="text-muted">
+            {isNew(id) ? 'Configure your bot identity and knowledge base' : `slug: ${form.slug}`}
+          </div>
         </div>
       </div>
 
       <div className="grid-2" style={{ alignItems: 'start' }}>
         {/* Left — config form */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Bot Identity */}
           <div className="card">
             <div className="card-title">Bot Identity</div>
             <form onSubmit={save}>
@@ -157,7 +201,9 @@ export default function DomainEditor() {
           {/* Upload */}
           {!isNew(id) && (
             <div className="card">
-              <div className="card-title"><FileText size={13} style={{ display: 'inline', marginRight: 6 }} />Knowledge Base</div>
+              <div className="card-title">
+                <FileText size={13} style={{ display: 'inline', marginRight: 6 }} />Knowledge Base
+              </div>
               {domain?.chunk_count > 0 && (
                 <div className="flex-center gap-2 mb-4" style={{ padding: '8px 12px', background: 'var(--bg-2)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
                   <span className="text-green">●</span>
@@ -184,12 +230,83 @@ export default function DomainEditor() {
               )}
             </div>
           )}
+
+          {/* Allowed Origins */}
+          {!isNew(id) && (
+            <div className="card">
+              <div className="card-title">
+                <Shield size={13} style={{ display: 'inline', marginRight: 6 }} />Allowed Origins
+              </div>
+              <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: 12 }}>
+                Restrict which websites can use this bot. Leave empty to allow all origins.
+              </div>
+
+              {/* Origin list */}
+              {allowedOrigins.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                  {allowedOrigins.map(origin => (
+                    <div key={origin} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '6px 10px', background: 'var(--bg-2)',
+                      border: '1px solid var(--border)', borderRadius: 'var(--radius)',
+                      fontFamily: 'var(--font-mono)', fontSize: '0.75rem',
+                    }}>
+                      <span style={{ color: 'var(--green)' }}>{origin}</span>
+                      <button
+                        onClick={() => removeOrigin(origin)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2 }}
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {allowedOrigins.length === 0 && (
+                <div style={{
+                  padding: '8px 12px', marginBottom: 12,
+                  background: 'var(--bg-2)', borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border)', fontSize: '0.75rem',
+                  color: 'var(--amber)',
+                }}>
+                  ⚠ No restrictions — any website can call this bot with your API key
+                </div>
+              )}
+
+              {/* Add origin input */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="form-input"
+                  placeholder="https://myshop.com"
+                  value={newOrigin}
+                  onChange={e => setNewOrigin(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addOrigin())}
+                  style={{ flex: 1 }}
+                />
+                <button className="btn btn-ghost btn-sm" onClick={addOrigin} disabled={!newOrigin.trim()}>
+                  <Plus size={14} /> Add
+                </button>
+              </div>
+
+              <button
+                className="btn btn-primary"
+                style={{ marginTop: 12 }}
+                onClick={saveOrigins}
+                disabled={savingOrigins}
+              >
+                {savingOrigins ? <span className="spinner" /> : <><Shield size={14} /> Save Origins</>}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right — bot tester */}
         {!isNew(id) && (
           <div className="card" style={{ position: 'sticky', top: 76 }}>
-            <div className="card-title"><Bot size={13} style={{ display: 'inline', marginRight: 6 }} />Live Bot Tester</div>
+            <div className="card-title">
+              <Bot size={13} style={{ display: 'inline', marginRight: 6 }} />Live Bot Tester
+            </div>
             {domain?.chunk_count > 0 ? (
               <>
                 <div className="chat-window" ref={chatRef}>

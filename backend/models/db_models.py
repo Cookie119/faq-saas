@@ -24,11 +24,10 @@ class Company(Base):
     password_hash   = Column(String(255), nullable=False)
     api_key         = Column(String(100), unique=True, nullable=False, index=True)
     plan            = Column(Enum("free", "pro", "enterprise", name="plan_enum"), default="free")
-    questions_used  = Column(Integer, default=0)          # resets monthly
+    questions_used  = Column(Integer, default=0)
     usage_reset_at  = Column(DateTime, default=datetime.utcnow)
     created_at      = Column(DateTime, default=datetime.utcnow)
 
-    # Relationships
     domains         = relationship("Domain", back_populates="company", cascade="all, delete")
     usage_logs      = relationship("UsageLog", back_populates="company", cascade="all, delete")
 
@@ -38,18 +37,20 @@ class Domain(Base):
 
     id              = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
     company_id      = Column(UUID(as_uuid=False), ForeignKey("companies.id"), nullable=False, index=True)
-    slug            = Column(String(100), nullable=False)   # unique per company, e.g. "greenroots"
+    slug            = Column(String(100), nullable=False)
     display_name    = Column(String(255), nullable=False)
-    md_content      = Column(Text, nullable=False)          # raw markdown stored in DB
+    md_content      = Column(Text, nullable=False)
     persona         = Column(String(500), nullable=True)
     tone            = Column(String(255), nullable=True)
     language        = Column(String(50), default="English")
     fallback_msg    = Column(Text, nullable=True)
     is_active       = Column(Boolean, default=True)
+    # NEW: list of allowed origins e.g. ["https://myshop.com", "https://support.myshop.com"]
+    # Empty list = allow all origins (backward compatible)
+    allowed_origins = Column(JSON, default=list)
     created_at      = Column(DateTime, default=datetime.utcnow)
     updated_at      = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
     company         = relationship("Company", back_populates="domains")
     usage_logs      = relationship("UsageLog", back_populates="domain", cascade="all, delete")
 
@@ -62,11 +63,10 @@ class UsageLog(Base):
     domain_id       = Column(UUID(as_uuid=False), ForeignKey("domains.id"), nullable=False, index=True)
     question        = Column(Text, nullable=False)
     answer          = Column(Text, nullable=False)
-    chunks_used     = Column(JSON, nullable=True)           # [{heading, score}]
+    chunks_used     = Column(JSON, nullable=True)
     tokens_used     = Column(Integer, default=0)
     search_fallback = Column(Boolean, default=False)
     created_at      = Column(DateTime, default=datetime.utcnow, index=True)
 
-    # Relationships
     company         = relationship("Company", back_populates="usage_logs")
     domain          = relationship("Domain", back_populates="usage_logs")

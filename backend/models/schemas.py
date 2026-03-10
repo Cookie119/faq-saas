@@ -73,6 +73,7 @@ class DomainUpdate(BaseModel):
     language: Optional[str] = None
     fallback_msg: Optional[str] = None
     is_active: Optional[bool] = None
+    allowed_origins: Optional[List[str]] = None
 
 
 class DomainResponse(BaseModel):
@@ -85,6 +86,7 @@ class DomainResponse(BaseModel):
     fallback_msg: Optional[str]
     is_active: bool
     chunk_count: int = 0
+    allowed_origins: List[str] = []
     created_at: datetime
     updated_at: datetime
 
@@ -100,12 +102,12 @@ class DomainListResponse(BaseModel):
 # ── Ask ───────────────────────────────────────────────────────────────────────
 
 class HistoryMessage(BaseModel):
-    role: str   # "user" or "assistant"
+    role: str
     content: str
 
 
 class AskRequest(BaseModel):
-    domain_id: str         # the domain slug, e.g. "greenroots"
+    domain_id: str
     question: str
     history: Optional[List[HistoryMessage]] = []
 
@@ -130,25 +132,6 @@ class AskResponse(BaseModel):
     search_fallback: bool
     model: str
     questions_remaining: Optional[int] = None
-
-
-# ── Search ────────────────────────────────────────────────────────────────────
-
-class SearchRequest(BaseModel):
-    domain_id: str
-    query: str
-    top_k: int = 5
-
-
-class SearchResult(BaseModel):
-    heading: str
-    content: str
-    score: float
-
-
-class SearchResponse(BaseModel):
-    results: List[SearchResult]
-    total: int
 
 
 # ── Analytics ─────────────────────────────────────────────────────────────────
