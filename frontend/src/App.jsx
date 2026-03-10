@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -28,7 +29,7 @@ function PublicRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/"            element={<Navigate to="/dashboard" replace />} />
+      <Route path="/"            element={<Landing />} />
       <Route path="/login"       element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register"    element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/dashboard"   element={<PrivateRoute><Dashboard /></PrivateRoute>} />
@@ -37,6 +38,7 @@ function AppRoutes() {
       <Route path="/analytics"   element={<PrivateRoute><Analytics /></PrivateRoute>} />
       <Route path="/settings"    element={<PrivateRoute><Settings /></PrivateRoute>} />
       <Route path="/admin"       element={<Admin />} />
+      <Route path="*"            element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
