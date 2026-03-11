@@ -5,6 +5,9 @@ from core.config import get_settings
 from core.database import Base, engine
 from routers import auth, dashboard, ask, admin
 
+from fastapi.staticfiles import StaticFiles
+import os
+
 settings = get_settings()
 
 Base.metadata.create_all(bind=engine)
@@ -15,6 +18,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = [
     # Local dev
