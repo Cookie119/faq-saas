@@ -58,6 +58,11 @@ def health():
     return {"status": "ok", "app": settings.app_name}
 
 
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+
 @app.get("/", tags=["Health"])
 def root():
     return {"message": "FAQ Bot SaaS API", "docs": "/docs"}

@@ -11,6 +11,7 @@ import DomainEditor from './pages/DomainEditor'
 import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
 import Admin from './pages/Admin'
+import { useKeepAlive } from './hooks/useKeepAlive'
 
 function PrivateRoute({ children }) {
   const { company, loading } = useAuth()
@@ -44,6 +45,7 @@ function AppRoutes() {
 }
 
 export default function App() {
+  useKeepAlive()
   return (
     <BrowserRouter>
       <AuthProvider>
