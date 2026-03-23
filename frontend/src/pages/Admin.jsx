@@ -119,7 +119,7 @@ export default function Admin() {
               <input
                 className="form-input"
                 type="email"
-                placeholder="your ADMIN_EMAIL from .env"
+                placeholder="Enter Email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
@@ -129,7 +129,7 @@ export default function Admin() {
               <input
                 className="form-input"
                 type="password"
-                placeholder="your generated admin key"
+                placeholder="Enter Password"
                 value={secretKey}
                 onChange={e => setSecretKey(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && load()}
