@@ -143,10 +143,6 @@ export default function Admin() {
             >
               {loading ? <span className="spinner" /> : <><Shield size={14} style={{marginRight: 6}} /> Access Admin Panel</>}
             </button>
-            <div className="text-muted" style={{ marginTop: 16, fontSize: '0.75rem', textAlign: 'center' }}>
-              Credentials set via <code style={{ color: '#2D6A4F', background: 'rgba(45,106,79,0.1)', padding: '2px 4px', borderRadius: '4px' }}>ADMIN_EMAIL</code> and{' '}
-              <code style={{ color: '#2D6A4F', background: 'rgba(45,106,79,0.1)', padding: '2px 4px', borderRadius: '4px' }}>ADMIN_SECRET_KEY_HASH</code>
-            </div>
           </div>
         </div>
       </div>
