@@ -21,10 +21,10 @@ function validate(form) {
 }
 
 export default function Login() {
-  const { login }   = useAuth()
-  const navigate    = useNavigate()
-  const [form, setForm]       = useState({ email: '', password: '' })
-  const [errors, setErrors]   = useState({})
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
   const f = (field) => (e) => {
@@ -38,9 +38,9 @@ export default function Login() {
     // client-side validation
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const errs = {}
-    if (!form.email.trim())               errs.email    = 'Email is required'
-    else if (!emailRe.test(form.email))   errs.email    = 'Enter a valid email (e.g. you@example.com)'
-    if (!form.password)                   errs.password = 'Password is required'
+    if (!form.email.trim()) errs.email = 'Email is required'
+    else if (!emailRe.test(form.email)) errs.email = 'Enter a valid email (e.g. you@example.com)'
+    if (!form.password) errs.password = 'Password is required'
 
     if (Object.keys(errs).length) { setErrors(errs); return }
 
@@ -104,13 +104,13 @@ export default function Login() {
 
         <div className="auth-switch">
           No account? <Link to="/register">Create one</Link>
+          <div style={{ textAlign: 'right', marginTop: -8, marginBottom: 16 }}>
+            <Link to="/forgot-password"
+              style={{ fontSize: '0.78rem', color: 'var(--green)', textDecoration: 'none' }}>
+              Forgot password?
+            </Link>
+          </div>
         </div>
-           <div style={{ textAlign: 'right', marginTop: -8, marginBottom: 16 }}>
-     <Link to="/forgot-password"
-       style={{ fontSize: '0.78rem', color: 'var(--green)', textDecoration: 'none' }}>
-       Forgot password?
-     </Link>
-</div>
       </div>
     </div>
   )
