@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     stripe_pro_price_id:     str = ""
     stripe_enterprise_price_id: str = ""
     stripe_webhook_secret:   str = ""
-    
+    resend_api_key: str = ""
 
     # Plan limits
     plan_limits: dict = {

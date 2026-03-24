@@ -45,3 +45,4 @@ uvloop==0.22.1
 watchfiles==1.1.1
 websockets==16.0
 stripe>=7.0.0
+resend>=2.0.0

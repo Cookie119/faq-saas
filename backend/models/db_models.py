@@ -15,6 +15,16 @@ def gen_uuid():
     return str(uuid.uuid4())
 
 
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+ 
+    id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
+    token      = Column(String, unique=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Company(Base):
     __tablename__ = "companies"
 
