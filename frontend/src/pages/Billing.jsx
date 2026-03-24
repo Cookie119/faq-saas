@@ -37,7 +37,7 @@ const PLANS = [
 function planRank(p) { return { free: 0, pro: 1, enterprise: 2 }[p] ?? 0 }
 
 export default function Billing() {
-  const { company, token } = useAuth()
+  const token = localStorage.getItem('token')
   const [status,   setStatus]   = useState(null)
   const [loading,  setLoading]  = useState(true)
   const [upgrading, setUpgrading] = useState('')

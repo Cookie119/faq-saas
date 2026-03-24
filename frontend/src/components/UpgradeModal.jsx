@@ -25,7 +25,7 @@ const UPGRADE_PLANS = [
 ]
 
 export default function UpgradeModal({ reason, onClose }) {
-  const { token } = useAuth()
+  const token = localStorage.getItem('token')
   const navigate  = useNavigate()
   const [upgrading, setUpgrading] = useState('')
 
