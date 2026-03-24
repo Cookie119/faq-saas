@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     debug: bool = False
     frontend_url: str = "http://localhost:5173"
 
+
+    stripe_secret_key:       str = ""
+    stripe_publishable_key:  str = ""
+    stripe_pro_price_id:     str = ""
+    stripe_enterprise_price_id: str = ""
+    stripe_webhook_secret:   str = ""
+    
+
     # Plan limits
     plan_limits: dict = {
         "free":       {"domains": 1,      "questions_per_month": 500,    "max_md_size_kb": 500},

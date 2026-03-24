@@ -4,13 +4,14 @@ import { analyticsAPI } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { Database, MessageSquare, Zap } from 'lucide-react'
 // Import your SCSS in your main entry file (main.jsx)
+import UpgradeModal from '../components/UpgradeModal'
 
 export default function Dashboard() {
   const { company } = useAuth()
   const [analytics, setAnalytics] = useState(null)
   const [plan, setPlan]           = useState(null)
   const [loading, setLoading]     = useState(true)
-
+  const [showUpgrade, setShowUpgrade] = useState(false)
   useEffect(() => {
     Promise.all([analyticsAPI.summary(), analyticsAPI.plan()])
       .then(([a, p]) => { setAnalytics(a.data); setPlan(p.data) })
@@ -26,6 +27,10 @@ export default function Dashboard() {
 
   const usagePct = plan ? Math.min(100, (plan.questions_used / plan.questions_limit) * 100) : 0
   const fillClass = usagePct > 90 ? 'red' : usagePct > 70 ? 'amber' : ''
+  // Auto-show modal when hitting 90%
+useEffect(() => {
+  if (usagePct >= 90) setShowUpgrade(true)
+}, [usagePct])
 
   return (
     <div className="page">
@@ -54,7 +59,23 @@ export default function Dashboard() {
           <div className="progress-bar">
             <div className={`progress-fill ${fillClass}`} style={{ width: `${usagePct}%` }} />
           </div>
+
+{usagePct >= 70 && plan?.plan !== 'enterprise' && (
+  <button
+    onClick={() => setShowUpgrade(true)}
+    style={{
+      marginTop: 10, width: '100%', padding: '6px',
+      borderRadius: 6, border: '1px solid var(--green)',
+      background: 'transparent', color: 'var(--green)',
+      fontSize: '0.72rem', fontWeight: 700,
+      cursor: 'pointer', fontFamily: 'inherit',
+    }}
+  >
+    ⚡ Upgrade plan
+  </button>
+)}
         </div>
+
 
         <div className="stat-card green">
           <div className="stat-label">Total Questions</div>
@@ -124,6 +145,14 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </div>
+      {showUpgrade && (
+        <UpgradeModal
+          reason={usagePct >= 90
+            ? "You've used " + Math.round(usagePct) + "% of your monthly questions"
+            : "Unlock more questions and domains"}
+          onClose={() => setShowUpgrade(false)}
+        />
+      )}
+    </div> 
   )
 }

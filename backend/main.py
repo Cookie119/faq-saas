@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from routers import billing
 from core.config import get_settings
 from core.database import Base, engine
 from routers import auth, dashboard, ask, admin
@@ -51,6 +51,7 @@ app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(ask.router)
 app.include_router(admin.router)
+app.include_router(billing.router)
 
 
 @app.get("/health", tags=["Health"])

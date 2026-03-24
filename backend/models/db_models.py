@@ -27,7 +27,8 @@ class Company(Base):
     questions_used  = Column(Integer, default=0)
     usage_reset_at  = Column(DateTime, default=datetime.utcnow)
     created_at      = Column(DateTime, default=datetime.utcnow)
-
+    stripe_customer_id      = Column(String, nullable=True)
+    stripe_subscription_id  = Column(String, nullable=True)
     domains         = relationship("Domain", back_populates="company", cascade="all, delete")
     usage_logs      = relationship("UsageLog", back_populates="company", cascade="all, delete")
 

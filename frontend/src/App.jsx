@@ -12,6 +12,7 @@ import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
 import Admin from './pages/Admin'
 import { useKeepAlive } from './hooks/useKeepAlive'
+import Billing from './pages/Billing'
 
 function PrivateRoute({ children }) {
   const { company, loading } = useAuth()
@@ -40,6 +41,7 @@ function AppRoutes() {
       <Route path="/settings"    element={<PrivateRoute><Settings /></PrivateRoute>} />
       <Route path="/admin"       element={<Admin />} />
       <Route path="*"            element={<Navigate to="/" replace />} />
+      <Route path="/billing" element={<Layout><Billing /></Layout>} />
     </Routes>
   )
 }

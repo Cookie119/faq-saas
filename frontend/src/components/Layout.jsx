@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { LayoutDashboard, Database, BarChart2, Settings, LogOut, Shield } from 'lucide-react'
-
+import { CreditCard } from 'lucide-react'
 export default function Layout({ children }) {
   const { company, logout } = useAuth()
   const navigate = useNavigate()
@@ -49,6 +49,10 @@ export default function Layout({ children }) {
 
           <NavLink to="/analytics" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <BarChart2 size={15} /><span>Analytics</span>
+          </NavLink>
+
+          <NavLink to="/billing" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+           <CreditCard size={15} /><span>Billing</span>
           </NavLink>
 
           <NavLink to="/settings" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
