@@ -355,9 +355,9 @@ export default function Landing() {
           </div>
           <div className="pgrid">
             {[
-              {badge:"Free",       price:"$0",     per:"forever",   hot:false, feats:["1 domain","500 questions / month","500 KB knowledge base","API key access","Community support"],                 cta:"Start free"},
-              {badge:"Pro",        price:"$29",    per:"per month", hot:true,  feats:["10 domains","10,000 questions / month","5 MB knowledge base","Origin restrictions","Priority support"],         cta:"Get Pro"},
-              {badge:"Enterprise", price:"Custom", per:"contact us",hot:false, feats:["Unlimited domains","Unlimited questions","20 MB knowledge base","SLA guarantee","Dedicated support"],           cta:"Contact us"},
+              {badge:"Free",       price:"₹0",     per:"forever",   hot:false, feats:["1 domain","500 questions / month","500 KB knowledge base","API key access","Community support"],                 cta:"Start free"},
+              {badge:"Pro",        price:"₹900.00",    per:"per month", hot:true,  feats:["10 domains","10,000 questions / month","5 MB knowledge base","Origin restrictions","Priority support"],         cta:"Get Pro"},
+              {badge:"Enterprise", price:"₹1800.00", per:"contact us",hot:false, feats:["Unlimited domains","Unlimited questions","20 MB knowledge base","SLA guarantee","Dedicated support"],           cta:"Contact us"},
             ].map((p,i)=>(
               <div key={i} className={`pc${p.hot?" hot":""}`}>
                 <div className="pb">{p.badge}</div>

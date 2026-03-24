@@ -10,7 +10,7 @@ const PLANS = [
   {
     key:   'free',
     name:  'Free',
-    price: '$0',
+    price: '₹0',
     per:   'forever',
     color: 'var(--ink3)',
     feats: ['1 domain', '500 questions / month', '500 KB knowledge base', 'API key access', 'Community support'],
@@ -18,7 +18,7 @@ const PLANS = [
   {
     key:   'pro',
     name:  'Pro',
-    price: '$29',
+    price: '₹900.00',
     per:   'per month',
     color: 'var(--green)',
     hot:   true,
@@ -27,7 +27,7 @@ const PLANS = [
   {
     key:   'enterprise',
     name:  'Enterprise',
-    price: '$99',
+    price: '₹1800.00',
     per:   'per month',
     color: 'var(--gold)',
     feats: ['Unlimited domains', 'Unlimited questions', '20 MB knowledge base', 'SLA guarantee', 'Dedicated support'],

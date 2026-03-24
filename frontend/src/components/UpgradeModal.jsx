@@ -11,14 +11,14 @@ const UPGRADE_PLANS = [
   {
     key:   'pro',
     name:  'Pro',
-    price: '$29/mo',
+    price: '₹900.00/mo',
     color: 'var(--green)',
     feats: ['10 domains', '10,000 questions / month', '5 MB knowledge base', 'Origin restrictions'],
   },
   {
     key:   'enterprise',
     name:  'Enterprise',
-    price: '$99/mo',
+    price: '₹1800.00/mo',
     color: 'var(--gold)',
     feats: ['Unlimited domains', 'Unlimited questions', '20 MB knowledge base', 'SLA + dedicated support'],
   },
