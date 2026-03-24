@@ -37,12 +37,12 @@ const PLANS = [
 function planRank(p) { return { free: 0, pro: 1, enterprise: 2 }[p] ?? 0 }
 
 export default function Billing() {
-  const { company, token } = useAuth()
+  
   const [status,   setStatus]   = useState(null)
   const [loading,  setLoading]  = useState(true)
   const [upgrading, setUpgrading] = useState('')
 
-  const authHeaders = { Authorization: `Bearer ${token}` }
+  const token = localStorage.getItem('token')
 
   useEffect(() => {
     axios.get(`${BASE}/billing/status`, { headers: authHeaders })
