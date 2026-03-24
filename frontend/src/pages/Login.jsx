@@ -21,10 +21,10 @@ function validate(form) {
 }
 
 export default function Login() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [errors, setErrors] = useState({})
+  const { login }   = useAuth()
+  const navigate    = useNavigate()
+  const [form, setForm]       = useState({ email: '', password: '' })
+  const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
 
   const f = (field) => (e) => {
@@ -38,9 +38,9 @@ export default function Login() {
     // client-side validation
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const errs = {}
-    if (!form.email.trim()) errs.email = 'Email is required'
-    else if (!emailRe.test(form.email)) errs.email = 'Enter a valid email (e.g. you@example.com)'
-    if (!form.password) errs.password = 'Password is required'
+    if (!form.email.trim())               errs.email    = 'Email is required'
+    else if (!emailRe.test(form.email))   errs.email    = 'Enter a valid email (e.g. you@example.com)'
+    if (!form.password)                   errs.password = 'Password is required'
 
     if (Object.keys(errs).length) { setErrors(errs); return }
 
@@ -91,6 +91,11 @@ export default function Login() {
               style={errors.password ? { borderColor: 'var(--red)' } : {}}
             />
             {errors.password && <div style={{ color: 'var(--red)', fontSize: '0.75rem', marginTop: 4 }}>{errors.password}</div>}
+            <div style={{ textAlign: 'right', marginTop: 6 }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: 'var(--green)', textDecoration: 'none', fontWeight: 500 }}>
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           <button
@@ -105,13 +110,6 @@ export default function Login() {
         <div className="auth-switch">
           No account? <Link to="/register">Create one</Link>
         </div>
-
-      </div>
-      <div style={{ textAlign: 'right', marginTop: -8, marginBottom: 16 }}>
-        <Link to="/forgot-password"
-          style={{ fontSize: '0.78rem', color: 'var(--green)', textDecoration: 'none' }}>
-          Forgot password?
-        </Link>
       </div>
     </div>
   )
