@@ -4,7 +4,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from core.config import settings
+from core.config import get_settings
+settings = get_settings()
 from core.database import get_db
 from core.auth import get_current_company
 from models.db_models import Company
