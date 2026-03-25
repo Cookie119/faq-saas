@@ -33,14 +33,14 @@ export const authAPI = {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export const domainsAPI = {
-  list:    ()           => api.get('/dashboard/domains'),
-  create:  (data)       => api.post('/dashboard/domains', data),
-  update:  (id, data)   => api.put(`/dashboard/domains/${id}`, data),
-  delete:  (id)         => api.delete(`/dashboard/domains/${id}`),
+  list:    ()           => api.get('/domains'),
+  create:  (data)       => api.post('/domains', data),
+  update:  (id, data)   => api.put(`/domains/${id}`, data),
+  delete:  (id)         => api.delete(`/domains/${id}`),
   upload:  (id, file)   => {
     const form = new FormData()
     form.append('file', file)
-    return api.post(`/dashboard/domains/${id}/upload`, form, {
+    return api.post(`/domains/${id}/upload`, form, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
   },
