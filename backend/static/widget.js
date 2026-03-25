@@ -190,6 +190,23 @@
     .gk-brand a{color:#bbb;text-decoration:none}
     .gk-brand a:hover{color:#999}
 
+    /* SUGGESTION CHIPS */
+    .gk-suggestions{
+      display:flex;flex-wrap:wrap;gap:6px;
+      padding:0 12px 10px;
+    }
+    .gk-chip{
+      padding:5px 12px;border-radius:16px;
+      border:1px solid rgba(${rgb},.25);
+      background:rgba(${rgb},.06);
+      color:${cfg.color};
+      font-size:12px;font-weight:500;
+      cursor:pointer;transition:all .15s;
+      font-family:inherit;
+    }
+    .gk-chip:hover{background:rgba(${rgb},.14);border-color:rgba(${rgb},.4)}
+    .gk-chip:disabled{opacity:.45;cursor:not-allowed}
+
     @media(max-width:420px){
       .gk-panel{width:calc(100vw - 24px);${cfg.position==='left'?'left:12px':'right:12px'};bottom:80px}
     }
@@ -290,7 +307,7 @@
   }
 
   // ── Render a message ──────────────────────────────────────────
-  function appendMessage(role, text) {
+  function appendMessage(role, text, suggestions = []) {
     // Remove welcome message on first real message
     const welcome = messages.querySelector('.gk-welcome');
     if (welcome) welcome.remove();
@@ -302,6 +319,26 @@
       <div class="gk-msg-time">${timestamp()}</div>
     `;
     messages.appendChild(div);
+
+    // Render suggestion chips for bot messages
+    if (role === 'bot' && suggestions.length > 0) {
+      const chipsDiv = document.createElement('div');
+      chipsDiv.className = 'gk-suggestions';
+      suggestions.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className  = 'gk-chip';
+        btn.textContent = s;
+        btn.addEventListener('click', () => {
+          // Remove chips after click so they don't stack
+          chipsDiv.remove();
+          input.value = s;
+          send();
+        });
+        chipsDiv.appendChild(btn);
+      });
+      messages.appendChild(chipsDiv);
+    }
+
     messages.scrollTop = messages.scrollHeight;
     return div;
   }
@@ -358,8 +395,9 @@
         appendMessage('bot', err.detail || 'Sorry, something went wrong. Please try again.');
       } else {
         const data = await res.json();
-        const answer = data.answer || 'No answer found.';
-        appendMessage('bot', answer);
+        const answer      = data.answer || 'No answer found.';
+        const suggestions = data.suggestions || [];
+        appendMessage('bot', answer, suggestions);
         history.push({ role: 'assistant', content: answer });
       }
     } catch (e) {
