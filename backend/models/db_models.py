@@ -61,7 +61,8 @@ class Domain(Base):
     company_id      = Column(UUID(as_uuid=False), ForeignKey("companies.id"), nullable=False, index=True)
     slug            = Column(String(100), nullable=False)
     display_name    = Column(String(255), nullable=False)
-    md_content      = Column(Text, nullable=False)
+    # md_content      = Column(Text, nullable=False)
+    md_content = Column(Text, nullable=False, server_default="")  # ← server_default
     persona         = Column(String(500), nullable=True)
     tone            = Column(String(255), nullable=True)
     language        = Column(String(50), default="English")

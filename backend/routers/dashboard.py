@@ -126,6 +126,7 @@ def create_domain(
         enable_suggestions=payload.enable_suggestions,
         is_active=True,
         chunk_count=0,
+        md_content="",   # ← ADD THIS — empty until files are uploaded
     )
     db.add(domain); db.commit(); db.refresh(domain)
     return {"id": str(domain.id), "slug": domain.slug, "display_name": domain.display_name}
