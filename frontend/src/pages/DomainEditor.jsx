@@ -170,12 +170,14 @@ export default function DomainEditor() {
 
   const [form, setForm] = useState({
     slug: '', display_name: '', persona: '', tone: 'helpful and professional',
-    language: 'English', fallback_msg: '',
+    language: 'English', fallback_msg: '', enable_suggestions: false,
   })
   const [domain,    setDomain]    = useState(null)
   const [saving,    setSaving]    = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [file,      setFile]      = useState(null)
+  const [files,     setFiles]     = useState([])      // selected files to upload
+  const [domFiles,  setDomFiles]  = useState([])      // files already on server
+  const [deletingFile, setDeletingFile] = useState('')
 
   const [allowedOrigins, setAllowedOrigins] = useState([])
   const [newOrigin,      setNewOrigin]      = useState('')
@@ -196,8 +198,10 @@ export default function DomainEditor() {
           slug: d.slug, display_name: d.display_name,
           persona: d.persona || '', tone: d.tone || 'helpful and professional',
           language: d.language || 'English', fallback_msg: d.fallback_msg || '',
+          enable_suggestions: d.enable_suggestions || false,
         })
         setAllowedOrigins(d.allowed_origins || [])
+        setDomFiles(d.files || [])
       })
     }
   }, [id])
@@ -223,18 +227,50 @@ export default function DomainEditor() {
     } finally { setSaving(false) }
   }
 
-  const uploadFile = async () => {
-    if (!file || isNew(id)) return
+  const uploadFiles = async () => {
+    if (!files.length || isNew(id)) return
     setUploading(true)
     try {
-      const { data } = await domainsAPI.upload(id, file)
-      setDomain(data)
-      toast.success(`Uploaded! ${data.chunk_count} chunks indexed.`)
-      setFile(null)
+      const formData = new FormData()
+      files.forEach(f => formData.append('files', f))
+      const token = localStorage.getItem('token')
+      const res   = await fetch(`${BASE}/domains/${id}/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Upload failed')
+
+      if (data.uploaded?.length) toast.success(`${data.uploaded.length} file(s) uploaded — ${data.chunk_count} chunks indexed`)
+      if (data.errors?.length)   data.errors.forEach(e => toast.error(e))
+
+      setDomFiles(data.files || [])
+      setDomain(d => ({ ...d, chunk_count: data.chunk_count }))
+      setFiles([])
       fileRef.current.value = ''
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Upload failed')
+      toast.error(err.message || 'Upload failed')
     } finally { setUploading(false) }
+  }
+
+  const deleteFile = async (fileId, filename) => {
+    if (!confirm(`Remove "${filename}" from this domain?`)) return
+    setDeletingFile(fileId)
+    try {
+      const token = localStorage.getItem('token')
+      const res   = await fetch(`${BASE}/domains/${id}/files/${fileId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Delete failed')
+      setDomFiles(p => p.filter(f => f.id !== fileId))
+      setDomain(d => ({ ...d, chunk_count: data.chunk_count }))
+      toast.success(`"${filename}" removed`)
+    } catch (err) {
+      toast.error(err.message || 'Delete failed')
+    } finally { setDeletingFile('') }
   }
 
   const addOrigin = () => {
@@ -271,10 +307,14 @@ export default function DomainEditor() {
     try {
       const history = messages.map(m => ({ role: m.role, content: m.content }))
       const { data } = await askAPI.ask(apiKey, domain.slug, q, history)
-      setMessages(p => [...p, { role: 'assistant', content: data.answer }])
+      setMessages(p => [...p, {
+        role: 'assistant',
+        content: data.answer,
+        suggestions: data.suggestions || [],
+      }])
     } catch (err) {
       const msg = err.response?.data?.detail || 'Error getting response'
-      setMessages(p => [...p, { role: 'assistant', content: `⚠ ${msg}` }])
+      setMessages(p => [...p, { role: 'assistant', content: `⚠ ${msg}`, suggestions: [] }])
     } finally { setAsking(false) }
   }
 
@@ -328,6 +368,42 @@ export default function DomainEditor() {
                 <label className="form-label">Fallback Message</label>
                 <input className="form-input" placeholder="I'm not sure, please contact support." value={form.fallback_msg} onChange={f('fallback_msg')} />
               </div>
+
+              {/* Suggestions toggle */}
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '12px 14px', background: 'var(--bg3)',
+                  border: '1px solid var(--border2)', borderRadius: 8,
+                }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--ink)', marginBottom: 2 }}>
+                      Follow-up suggestions
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--ink3)' }}>
+                      Show 2 clickable follow-up questions after each answer
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, enable_suggestions: !p.enable_suggestions }))}
+                    style={{
+                      width: 44, height: 24, borderRadius: 12, border: 'none',
+                      background: form.enable_suggestions ? 'var(--green)' : 'var(--border2)',
+                      cursor: 'pointer', position: 'relative', transition: 'background .2s',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div style={{
+                      width: 18, height: 18, borderRadius: '50%', background: '#fff',
+                      position: 'absolute', top: 3,
+                      left: form.enable_suggestions ? 23 : 3,
+                      transition: 'left .2s',
+                      boxShadow: '0 1px 3px rgba(0,0,0,.2)',
+                    }} />
+                  </button>
+                </div>
+              </div>
               <button className="btn btn-primary" type="submit" disabled={saving} style={{ width: '100%', justifyContent: 'center' }}>
                 {saving ? <span className="spinner" /> : <><Save size={14} /> {isNew(id) ? 'Create Domain' : 'Save Changes'}</>}
               </button>
@@ -338,44 +414,80 @@ export default function DomainEditor() {
           {!isNew(id) && (
             <div className="card">
               <div className="card-title"><FileText size={14} /> Knowledge Base</div>
-              {domain?.chunk_count > 0 && (
-                <div className="flex-center gap-2" style={{
-                  padding: '10px 14px', background: 'var(--green-light)',
-                  borderRadius: 8, border: '1px solid var(--border2)', marginBottom: 14
-                }}>
-                  <span style={{ color: 'var(--green)', fontWeight: 700 }}>●</span>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--ink)', fontWeight: 500 }}>{domain.chunk_count} chunks indexed</span>
-                  <span className="text-muted" style={{ marginLeft: 'auto', fontSize: '0.75rem' }}>
-                    Updated {new Date(domain.updated_at).toLocaleDateString()}
-                  </span>
+
+              {/* Existing files list */}
+              {domFiles.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+                  {domFiles.map(f => (
+                    <div key={f.id} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '9px 12px', background: 'var(--bg3)',
+                      border: '1px solid var(--border2)', borderRadius: 8,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                        <span style={{
+                          fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
+                          background: 'var(--green-light)', color: 'var(--green)',
+                          padding: '2px 6px', borderRadius: 4, fontFamily: 'DM Mono, monospace',
+                        }}>{f.file_type}</span>
+                        <span style={{ fontSize: '0.83rem', color: 'var(--ink)', fontWeight: 500 }}>{f.filename}</span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--ink3)' }}>{f.chunk_count} chunks</span>
+                      </div>
+                      <button
+                        onClick={() => deleteFile(f.id, f.filename)}
+                        disabled={deletingFile === f.id}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink3)', padding: 4, display: 'flex' }}
+                      >
+                        {deletingFile === f.id ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <X size={13} />}
+                      </button>
+                    </div>
+                  ))}
+                  <div style={{ fontSize: '0.72rem', color: 'var(--ink3)', paddingLeft: 2 }}>
+                    {domain?.chunk_count || 0} total chunks indexed
+                  </div>
                 </div>
               )}
+
+              {/* Upload zone — accepts multiple files */}
               <div
                 onClick={() => fileRef.current?.click()}
                 onDragOver={e => e.preventDefault()}
-                onDrop={e => { e.preventDefault(); setFile(e.dataTransfer.files[0]) }}
+                onDrop={e => { e.preventDefault(); setFiles(Array.from(e.dataTransfer.files)) }}
                 style={{
-                  border: `2px dashed ${file ? 'var(--green)' : 'var(--border2)'}`,
-                  borderRadius: 10, padding: '28px 20px', textAlign: 'center', cursor: 'pointer',
-                  background: file ? 'var(--green-light)' : 'var(--bg3)',
+                  border: `2px dashed ${files.length ? 'var(--green)' : 'var(--border2)'}`,
+                  borderRadius: 10, padding: '24px 20px', textAlign: 'center', cursor: 'pointer',
+                  background: files.length ? 'var(--green-light)' : 'var(--bg3)',
                   transition: 'all .2s',
                 }}
               >
-                <Upload size={22} style={{ color: 'var(--ink3)', marginBottom: 8 }} />
-                <div style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--ink)' }}>
-                  {file ? file.name : 'Drop your .md file here'}
+                <Upload size={20} style={{ color: 'var(--ink3)', marginBottom: 8 }} />
+                <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--ink)' }}>
+                  {files.length
+                    ? `${files.length} file${files.length > 1 ? 's' : ''} selected`
+                    : 'Drop files here or click to browse'}
                 </div>
-                <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: 4 }}>
-                  {file ? `${(file.size / 1024).toFixed(1)} KB` : 'or click to browse'}
+                <div className="text-muted" style={{ fontSize: '0.75rem', marginTop: 4 }}>
+                  {files.length
+                    ? files.map(f => f.name).join(', ')
+                    : '.md  .txt  .pdf  .docx  .csv — multiple files supported'}
                 </div>
               </div>
-              <input ref={fileRef} type="file" accept=".md" style={{ display: 'none' }}
-                onChange={e => setFile(e.target.files[0])} />
-              {file && (
-                <button className="btn btn-primary" style={{ marginTop: 12, width: '100%', justifyContent: 'center' }}
-                  onClick={uploadFile} disabled={uploading}>
-                  {uploading ? <span className="spinner" /> : <><Upload size={14} /> Upload & Index</>}
-                </button>
+              <input
+                ref={fileRef} type="file" style={{ display: 'none' }}
+                accept=".md,.txt,.pdf,.docx,.csv"
+                multiple
+                onChange={e => setFiles(Array.from(e.target.files))}
+              />
+              {files.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}
+                    onClick={uploadFiles} disabled={uploading}>
+                    {uploading ? <span className="spinner" /> : <><Upload size={13} /> Upload & Index</>}
+                  </button>
+                  <button className="btn btn-ghost" onClick={() => { setFiles([]); fileRef.current.value = '' }}>
+                    <X size={13} />
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -455,7 +567,7 @@ export default function DomainEditor() {
                     </div>
                   )}
                   {messages.map((m, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
                       <div style={{
                         maxWidth: '80%', padding: '9px 13px',
                         borderRadius: m.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
@@ -466,6 +578,43 @@ export default function DomainEditor() {
                       }}>
                         {m.content}
                       </div>
+                      {/* Suggestion chips */}
+                      {m.role === 'assistant' && m.suggestions?.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, maxWidth: '90%' }}>
+                          {m.suggestions.map((s, si) => (
+                            <button
+                              key={si}
+                              onClick={() => {
+                                setQuestion(s)
+                                // auto-submit
+                                setMessages(p => [...p, { role: 'user', content: s }])
+                                setAsking(true)
+                                const history = messages.map(m => ({ role: m.role, content: m.content }))
+                                askAPI.ask(apiKey, domain.slug, s, history)
+                                  .then(({ data }) => setMessages(p => [...p, {
+                                    role: 'assistant', content: data.answer, suggestions: data.suggestions || []
+                                  }]))
+                                  .catch(() => setMessages(p => [...p, { role: 'assistant', content: '⚠ Error', suggestions: [] }]))
+                                  .finally(() => setAsking(false))
+                              }}
+                              disabled={asking}
+                              style={{
+                                padding: '5px 11px', borderRadius: 20,
+                                border: '1px solid var(--border2)',
+                                background: 'var(--bg2)', color: 'var(--green)',
+                                fontSize: '0.75rem', fontWeight: 500,
+                                cursor: asking ? 'not-allowed' : 'pointer',
+                                fontFamily: 'inherit', transition: 'all .15s',
+                                opacity: asking ? 0.5 : 1,
+                              }}
+                              onMouseEnter={e => e.target.style.background = 'var(--green-light)'}
+                              onMouseLeave={e => e.target.style.background = 'var(--bg2)'}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                   {asking && (

@@ -24,6 +24,17 @@ class PasswordResetToken(Base):
     expires_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class DomainFile(Base):  # noqa — Base is already imported in your db_models.py
+    __tablename__ = "domain_files"
+ 
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    domain_id   = Column(UUID(as_uuid=True), ForeignKey("domains.id", ondelete="CASCADE"), nullable=False)
+    filename    = Column(String, nullable=False)
+    file_type   = Column(String, nullable=False)   # 'md' | 'pdf' | 'docx' | 'txt' | 'csv'
+    raw_content = Column(Text, nullable=False)      # converted markdown text
+    chunk_count = Column(Integer, default=0)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
 
 class Company(Base):
     __tablename__ = "companies"
