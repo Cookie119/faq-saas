@@ -170,9 +170,8 @@ export default function DomainEditor() {
 
   const [form, setForm] = useState({
     slug: '', display_name: '', persona: '', tone: 'helpful and professional',
-    language: 'English', fallback_msg: '', 
+    language: 'English', fallback_msg: '', enable_suggestions: false,
   })
-  // enable_suggestions: false,
   const [domain,    setDomain]    = useState(null)
   const [saving,    setSaving]    = useState(false)
   const [uploading, setUploading] = useState(false)

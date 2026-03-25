@@ -70,6 +70,7 @@ class Domain(Base):
     # NEW: list of allowed origins e.g. ["https://myshop.com", "https://support.myshop.com"]
     # Empty list = allow all origins (backward compatible)
     allowed_origins = Column(JSON, default=list)
+    enable_suggestions = Column(Boolean, default=False)
     created_at      = Column(DateTime, default=datetime.utcnow)
     updated_at      = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

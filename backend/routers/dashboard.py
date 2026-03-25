@@ -79,7 +79,7 @@ def list_domains(
             "is_active":       d.is_active,
             "chunk_count":     d.chunk_count,
             "allowed_origins": d.allowed_origins or [],
-            # "enable_suggestions": getattr(d, 'enable_suggestions', False),
+            "enable_suggestions": getattr(d, 'enable_suggestions', False),
             "updated_at":      d.updated_at.isoformat() if d.updated_at else None,
             "files": [{
                 "id":          str(f.id),
@@ -100,7 +100,7 @@ class DomainCreate(BaseModel):
     tone:                str  = "helpful and professional"
     language:            str  = "English"
     fallback_msg:        str  = ""
-    # enable_suggestions:  bool = False
+    enable_suggestions:  bool = False
 
 @router.post("", status_code=201)
 def create_domain(
@@ -123,7 +123,7 @@ def create_domain(
         tone=payload.tone,
         language=payload.language,
         fallback_msg=payload.fallback_msg,
-        # enable_suggestions=payload.enable_suggestions,
+        enable_suggestions=payload.enable_suggestions,
         is_active=True,
         chunk_count=0,
     )
@@ -140,7 +140,7 @@ class DomainUpdate(BaseModel):
     fallback_msg:        str  = None
     is_active:           bool = None
     allowed_origins:     list = None
-    # enable_suggestions:  bool = None
+    enable_suggestions:  bool = None
 
 @router.put("/{domain_id}")
 def update_domain(
