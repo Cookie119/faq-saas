@@ -16,7 +16,7 @@ from core.auth import get_current_company
 from core.database import get_db
 from core.config import get_settings
 from models.db_models import Company, Domain, DomainFile
-from services.domain_loader import rebuild_index
+from services.domain_loader import domain_loader, DomainChunk
 from services.usage import usage_service
 from services.file_converter import convert_to_markdown
 
@@ -43,13 +43,17 @@ def _get_domain(domain_id: str, company: Company, db: Session) -> Domain:
 
 
 def _rebuild_and_update(domain: Domain, db: Session):
-    """Merge all file chunks and rebuild BM25 index for the domain."""
+    """Merge all file contents, re-chunk using domain_loader, update chunk_count."""
     files = db.query(DomainFile).filter(DomainFile.domain_id == domain.id).all()
 
+    # Merge all raw markdown content
     all_content = "\n\n---\n\n".join(f.raw_content for f in files)
-    chunks      = rebuild_index(domain.id, all_content)  # returns list of chunk strings
 
-    # Update chunk counts
+    # Use existing chunking logic from domain_loader
+    chunks = domain_loader._split_chunks(all_content)
+
+    # Store merged content on domain so knowledge_search can access it
+    domain.md_content  = all_content
     domain.chunk_count = len(chunks)
     db.commit()
 
