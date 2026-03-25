@@ -67,6 +67,7 @@ class Domain(Base):
     language        = Column(String(50), default="English")
     fallback_msg    = Column(Text, nullable=True)
     is_active       = Column(Boolean, default=True)
+    chunk_count     = Column(Integer, default=0)
     # NEW: list of allowed origins e.g. ["https://myshop.com", "https://support.myshop.com"]
     # Empty list = allow all origins (backward compatible)
     allowed_origins = Column(JSON, default=list)
