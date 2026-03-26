@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { domainsAPI, askAPI } from '../api/client'
 import { useAuth } from '../context/AuthContext'
-import { Upload, Send, Bot, FileText, Save, Shield, Plus, X, Code, Copy, Check } from 'lucide-react'
+import { Upload, Send, Bot, FileText, Save, Shield, Plus, X, Code, Copy, Check, Pencil, Eye, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -179,6 +179,13 @@ export default function DomainEditor() {
   const [domFiles,  setDomFiles]  = useState([])      // files already on server
   const [deletingFile, setDeletingFile] = useState('')
 
+  // MD editor state
+  const [editingFile,   setEditingFile]   = useState(null)   // { id, filename, raw_content }
+  const [editorContent, setEditorContent] = useState('')
+  const [editorTab,     setEditorTab]     = useState('edit') // 'edit' | 'preview'
+  const [savingContent, setSavingContent] = useState(false)
+  const [loadingFile,   setLoadingFile]   = useState('')
+
   const [allowedOrigins, setAllowedOrigins] = useState([])
   const [newOrigin,      setNewOrigin]      = useState('')
   const [savingOrigins,  setSavingOrigins]  = useState(false)
@@ -271,6 +278,63 @@ export default function DomainEditor() {
     } catch (err) {
       toast.error(err.message || 'Delete failed')
     } finally { setDeletingFile('') }
+  }
+
+  const openEditor = async (file) => {
+    setLoadingFile(file.id)
+    try {
+      const token = localStorage.getItem('token')
+      const res   = await fetch(`${BASE}/domains/${id}/files/${file.id}/content`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Failed to load file')
+      setEditingFile(data)
+      setEditorContent(data.raw_content)
+      setEditorTab('edit')
+    } catch (err) {
+      toast.error(err.message || 'Could not open file')
+    } finally { setLoadingFile('') }
+  }
+
+  const saveContent = async () => {
+    if (!editingFile) return
+    setSavingContent(true)
+    try {
+      const token = localStorage.getItem('token')
+      const res   = await fetch(`${BASE}/domains/${id}/files/${editingFile.id}/content`, {
+        method:  'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ raw_content: editorContent }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Save failed')
+      toast.success(`Saved & re-indexed — ${data.chunk_count} total chunks`)
+      setDomain(d => ({ ...d, chunk_count: data.chunk_count }))
+      setDomFiles(p => p.map(f => f.id === editingFile.id
+        ? { ...f, chunk_count: data.file_chunks }
+        : f
+      ))
+      setEditingFile(null)
+    } catch (err) {
+      toast.error(err.message || 'Save failed')
+    } finally { setSavingContent(false) }
+  }
+
+  // Simple markdown → HTML for preview (no dependencies)
+  const renderMarkdown = (md) => {
+    return md
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/^(?!<[hul])/gm, '')
   }
 
   const addOrigin = () => {
@@ -415,79 +479,175 @@ export default function DomainEditor() {
             <div className="card">
               <div className="card-title"><FileText size={14} /> Knowledge Base</div>
 
-              {/* Existing files list */}
-              {domFiles.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
-                  {domFiles.map(f => (
-                    <div key={f.id} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '9px 12px', background: 'var(--bg3)',
-                      border: '1px solid var(--border2)', borderRadius: 8,
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <span style={{
-                          fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
-                          background: 'var(--green-light)', color: 'var(--green)',
-                          padding: '2px 6px', borderRadius: 4, fontFamily: 'DM Mono, monospace',
-                        }}>{f.file_type}</span>
-                        <span style={{ fontSize: '0.83rem', color: 'var(--ink)', fontWeight: 500 }}>{f.filename}</span>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--ink3)' }}>{f.chunk_count} chunks</span>
-                      </div>
+              {/* ── MD Editor (shown when editing a file) ── */}
+              {editingFile && (
+                <div style={{ marginBottom: 16 }}>
+                  {/* Editor header */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginBottom: 10,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button
-                        onClick={() => deleteFile(f.id, f.filename)}
-                        disabled={deletingFile === f.id}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink3)', padding: 4, display: 'flex' }}
+                        onClick={() => setEditingFile(null)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink3)', display: 'flex', padding: 2 }}
                       >
-                        {deletingFile === f.id ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <X size={13} />}
+                        <ArrowLeft size={14} />
                       </button>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--ink)' }}>
+                        {editingFile.filename}
+                      </span>
                     </div>
-                  ))}
-                  <div style={{ fontSize: '0.72rem', color: 'var(--ink3)', paddingLeft: 2 }}>
-                    {domain?.chunk_count || 0} total chunks indexed
+                    {/* Edit / Preview tabs */}
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {['edit', 'preview'].map(tab => (
+                        <button key={tab} onClick={() => setEditorTab(tab)} style={{
+                          padding: '4px 12px', borderRadius: 6, border: '1px solid',
+                          fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                          fontFamily: 'inherit', textTransform: 'capitalize',
+                          background: editorTab === tab ? 'var(--green)' : 'transparent',
+                          color:      editorTab === tab ? '#fff' : 'var(--ink3)',
+                          borderColor: editorTab === tab ? 'var(--green)' : 'var(--border2)',
+                        }}>
+                          {tab === 'edit' ? <><Pencil size={10} style={{ marginRight: 4 }} />Edit</> : <><Eye size={10} style={{ marginRight: 4 }} />Preview</>}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Editor or Preview */}
+                  {editorTab === 'edit' ? (
+                    <textarea
+                      value={editorContent}
+                      onChange={e => setEditorContent(e.target.value)}
+                      spellCheck={false}
+                      style={{
+                        width: '100%', minHeight: 320,
+                        background: 'var(--bg3)', border: '1px solid var(--border2)',
+                        borderRadius: 8, padding: '12px 14px',
+                        fontFamily: 'DM Mono, monospace', fontSize: '0.78rem',
+                        lineHeight: 1.75, color: 'var(--ink)',
+                        resize: 'vertical', outline: 'none',
+                        transition: 'border-color .15s',
+                      }}
+                      onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--border2)'}
+                    />
+                  ) : (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(editorContent) }}
+                      style={{
+                        minHeight: 320, padding: '14px 16px',
+                        background: 'var(--bg2)', border: '1px solid var(--border)',
+                        borderRadius: 8, fontSize: '0.85rem', lineHeight: 1.7,
+                        color: 'var(--ink)', overflowY: 'auto',
+                      }}
+                    />
+                  )}
+
+                  {/* Save / Cancel */}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                    <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}
+                      onClick={saveContent} disabled={savingContent}>
+                      {savingContent ? <span className="spinner" /> : <><Save size={13} /> Save & Re-index</>}
+                    </button>
+                    <button className="btn btn-ghost" onClick={() => setEditingFile(null)}>
+                      Cancel
+                    </button>
                   </div>
                 </div>
               )}
 
-              {/* Upload zone — accepts multiple files */}
-              <div
-                onClick={() => fileRef.current?.click()}
-                onDragOver={e => e.preventDefault()}
-                onDrop={e => { e.preventDefault(); setFiles(Array.from(e.dataTransfer.files)) }}
-                style={{
-                  border: `2px dashed ${files.length ? 'var(--green)' : 'var(--border2)'}`,
-                  borderRadius: 10, padding: '24px 20px', textAlign: 'center', cursor: 'pointer',
-                  background: files.length ? 'var(--green-light)' : 'var(--bg3)',
-                  transition: 'all .2s',
-                }}
-              >
-                <Upload size={20} style={{ color: 'var(--ink3)', marginBottom: 8 }} />
-                <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--ink)' }}>
-                  {files.length
-                    ? `${files.length} file${files.length > 1 ? 's' : ''} selected`
-                    : 'Drop files here or click to browse'}
-                </div>
-                <div className="text-muted" style={{ fontSize: '0.75rem', marginTop: 4 }}>
-                  {files.length
-                    ? files.map(f => f.name).join(', ')
-                    : '.md  .txt  .pdf  .docx  .csv — multiple files supported'}
-                </div>
-              </div>
-              <input
-                ref={fileRef} type="file" style={{ display: 'none' }}
-                accept=".md,.txt,.pdf,.docx,.csv"
-                multiple
-                onChange={e => setFiles(Array.from(e.target.files))}
-              />
-              {files.length > 0 && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                  <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}
-                    onClick={uploadFiles} disabled={uploading}>
-                    {uploading ? <span className="spinner" /> : <><Upload size={13} /> Upload & Index</>}
-                  </button>
-                  <button className="btn btn-ghost" onClick={() => { setFiles([]); fileRef.current.value = '' }}>
-                    <X size={13} />
-                  </button>
-                </div>
+              {/* Existing files list — hidden when editing */}
+              {!editingFile && (
+                <>
+                  {domFiles.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+                      {domFiles.map(f => (
+                        <div key={f.id} style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '9px 12px', background: 'var(--bg3)',
+                          border: '1px solid var(--border2)', borderRadius: 8,
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                            <span style={{
+                              fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase',
+                              background: 'var(--green-light)', color: 'var(--green)',
+                              padding: '2px 6px', borderRadius: 4, fontFamily: 'DM Mono, monospace',
+                            }}>{f.file_type}</span>
+                            <span style={{ fontSize: '0.83rem', color: 'var(--ink)', fontWeight: 500 }}>{f.filename}</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--ink3)' }}>{f.chunk_count} chunks</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <button
+                              onClick={() => openEditor(f)}
+                              disabled={!!loadingFile}
+                              title="Edit content"
+                              style={{ background: 'none', border: '1px solid var(--border2)', borderRadius: 5, cursor: 'pointer', color: 'var(--ink3)', padding: '3px 7px', display: 'flex', transition: 'all .15s' }}
+                              onMouseEnter={e => { e.currentTarget.style.color = 'var(--green)'; e.currentTarget.style.borderColor = 'var(--green)' }}
+                              onMouseLeave={e => { e.currentTarget.style.color = 'var(--ink3)'; e.currentTarget.style.borderColor = 'var(--border2)' }}
+                            >
+                              {loadingFile === f.id ? <span className="spinner" style={{ width: 11, height: 11 }} /> : <Pencil size={12} />}
+                            </button>
+                            <button
+                              onClick={() => deleteFile(f.id, f.filename)}
+                              disabled={deletingFile === f.id}
+                              title="Remove file"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink3)', padding: '3px 4px', display: 'flex' }}
+                            >
+                              {deletingFile === f.id ? <span className="spinner" style={{ width: 11, height: 11 }} /> : <X size={13} />}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <div style={{ fontSize: '0.72rem', color: 'var(--ink3)', paddingLeft: 2 }}>
+                        {domain?.chunk_count || 0} total chunks indexed
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload zone */}
+                  <div
+                    onClick={() => fileRef.current?.click()}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); setFiles(Array.from(e.dataTransfer.files)) }}
+                    style={{
+                      border: `2px dashed ${files.length ? 'var(--green)' : 'var(--border2)'}`,
+                      borderRadius: 10, padding: '24px 20px', textAlign: 'center', cursor: 'pointer',
+                      background: files.length ? 'var(--green-light)' : 'var(--bg3)',
+                      transition: 'all .2s',
+                    }}
+                  >
+                    <Upload size={20} style={{ color: 'var(--ink3)', marginBottom: 8 }} />
+                    <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--ink)' }}>
+                      {files.length
+                        ? `${files.length} file${files.length > 1 ? 's' : ''} selected`
+                        : 'Drop files here or click to browse'}
+                    </div>
+                    <div className="text-muted" style={{ fontSize: '0.75rem', marginTop: 4 }}>
+                      {files.length
+                        ? files.map(f => f.name).join(', ')
+                        : '.md  .txt  .pdf  .docx  .csv — multiple files supported'}
+                    </div>
+                  </div>
+                  <input
+                    ref={fileRef} type="file" style={{ display: 'none' }}
+                    accept=".md,.txt,.pdf,.docx,.csv"
+                    multiple
+                    onChange={e => setFiles(Array.from(e.target.files))}
+                  />
+                  {files.length > 0 && (
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                      <button className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}
+                        onClick={uploadFiles} disabled={uploading}>
+                        {uploading ? <span className="spinner" /> : <><Upload size={13} /> Upload & Index</>}
+                      </button>
+                      <button className="btn btn-ghost" onClick={() => { setFiles([]); fileRef.current.value = '' }}>
+                        <X size={13} />
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

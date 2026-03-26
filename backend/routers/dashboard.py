@@ -126,7 +126,6 @@ def create_domain(
         enable_suggestions=payload.enable_suggestions,
         is_active=True,
         chunk_count=0,
-        md_content="",   # ← ADD THIS — empty until files are uploaded
     )
     db.add(domain); db.commit(); db.refresh(domain)
     return {"id": str(domain.id), "slug": domain.slug, "display_name": domain.display_name}
@@ -265,6 +264,71 @@ def list_files(
         "chunk_count": f.chunk_count,
         "uploaded_at": f.uploaded_at.isoformat() if f.uploaded_at else None,
     } for f in files]}
+
+
+# ── Get single file content (for editor) ─────────────────────────
+@router.get("/{domain_id}/files/{file_id}/content")
+def get_file_content(
+    domain_id: str,
+    file_id:   str,
+    company:   Company = Depends(get_current_company),
+    db:        Session = Depends(get_db),
+):
+    domain = _get_domain(domain_id, company, db)
+    f = db.query(DomainFile).filter(
+        DomainFile.id        == file_id,
+        DomainFile.domain_id == domain.id,
+    ).first()
+    if not f:
+        raise HTTPException(status_code=404, detail="File not found")
+    return {
+        "id":          str(f.id),
+        "filename":    f.filename,
+        "file_type":   f.file_type,
+        "raw_content": f.raw_content,
+        "chunk_count": f.chunk_count,
+    }
+
+
+# ── Update file content (from MD editor) ─────────────────────────
+class FileContentUpdate(BaseModel):
+    raw_content: str
+
+@router.put("/{domain_id}/files/{file_id}/content")
+def update_file_content(
+    domain_id: str,
+    file_id:   str,
+    payload:   FileContentUpdate,
+    company:   Company = Depends(get_current_company),
+    db:        Session = Depends(get_db),
+):
+    domain = _get_domain(domain_id, company, db)
+    f = db.query(DomainFile).filter(
+        DomainFile.id        == file_id,
+        DomainFile.domain_id == domain.id,
+    ).first()
+    if not f:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    if not payload.raw_content.strip():
+        raise HTTPException(status_code=400, detail="Content cannot be empty")
+
+    f.raw_content = payload.raw_content
+    db.commit()
+
+    # Rebuild index immediately
+    _rebuild_and_update(domain, db)
+
+    # Update per-file chunk count estimate
+    file_chunks = domain_loader._split_chunks(payload.raw_content)
+    f.chunk_count = len(file_chunks)
+    db.commit()
+
+    return {
+        "ok":          True,
+        "chunk_count": domain.chunk_count,
+        "file_chunks": f.chunk_count,
+    }
 
 
 # ── Delete single file ────────────────────────────────────────────
