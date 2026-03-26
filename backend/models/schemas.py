@@ -132,6 +132,7 @@ class AskResponse(BaseModel):
     search_fallback: bool
     model: str
     questions_remaining: Optional[int] = None
+    suggestions:        list[str] = []   
 
 
 # ── Analytics ─────────────────────────────────────────────────────────────────

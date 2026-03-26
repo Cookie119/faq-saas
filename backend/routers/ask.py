@@ -75,7 +75,12 @@ async def ask(
 
     parsed  = domain_loader.parse(domain_db)
     history = [{"role": m.role, "content": m.content} for m in (payload.history or [])]
-    result  = await faq_bot.ask(domain=parsed, question=payload.question, history=history)
+    result  = await faq_bot.ask(
+        domain=parsed,
+        question=payload.question,
+        history=history,
+        enable_suggestions=getattr(domain_db, 'enable_suggestions', False),
+    )
 
     log = UsageLog(
         company_id=company.id,
@@ -97,4 +102,5 @@ async def ask(
         search_fallback=result.search_fallback,
         model=settings.ai_model,
         questions_remaining=questions_remaining,
+        suggestions=result.suggestions,
     )

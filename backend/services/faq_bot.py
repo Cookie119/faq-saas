@@ -22,11 +22,13 @@ class BotResponse:
         retrieved_chunks: List[SearchResult],
         search_fallback: bool,
         tokens_used: int,
+        suggestions: List[str] = None,
     ):
         self.answer = answer
         self.retrieved_chunks = retrieved_chunks
         self.search_fallback = search_fallback
         self.tokens_used = tokens_used
+        self.suggestions = suggestions or []
 
 
 class FAQBot:
@@ -36,6 +38,7 @@ class FAQBot:
         domain: ParsedDomain,
         question: str,
         history: Optional[List[dict]] = None,
+        enable_suggestions: bool = False,
     ) -> BotResponse:
 
         # 1. Retrieve relevant chunks
@@ -49,9 +52,9 @@ class FAQBot:
             context = domain.raw[:CONTEXT_CHAR_LIMIT]
 
         # 3. Build system prompt
-        system_prompt = self._build_system_prompt(domain, context)
+        system_prompt = self._build_system_prompt(domain, context, enable_suggestions)
 
-        # 4. Build messages — Groq uses OpenAI format
+        # 4. Build messages
         messages = [{"role": "system", "content": system_prompt}]
         if history:
             for msg in history[-6:]:
@@ -59,18 +62,22 @@ class FAQBot:
         messages.append({"role": "user", "content": question})
 
         # 5. Call Groq
-        answer, tokens_used = await self._call_groq(messages)
+        raw, tokens_used = await self._call_groq(messages)
+
+        # 6. Parse response
+        answer, suggestions = self._parse_response(raw, enable_suggestions)
 
         return BotResponse(
             answer=answer,
             retrieved_chunks=results,
             search_fallback=not has_results,
             tokens_used=tokens_used,
+            suggestions=suggestions,
         )
 
     # ── Prompt Builder ────────────────────────────────────────────────────────
 
-    def _build_system_prompt(self, domain: ParsedDomain, context: str) -> str:
+    def _build_system_prompt(self, domain: ParsedDomain, context: str, enable_suggestions: bool = False) -> str:
         persona = (
             f"You are {domain.persona}."
             if domain.persona
@@ -83,7 +90,7 @@ class FAQBot:
             else "If the answer is not found, say you don't have that information and suggest contacting support."
         )
 
-        return f"""{persona}
+        base = f"""{persona}
 
 Respond in {domain.language}. Your tone should be: {domain.tone}.
 
@@ -101,6 +108,48 @@ Rules:
 - Never fabricate facts, prices, policies, or procedures
 - If greeted, respond warmly but briefly
 - If unsure, say so and suggest the user contact support"""
+
+        if not enable_suggestions:
+            return base
+
+        return base + """
+
+IMPORTANT: You must respond with valid JSON only — no markdown, no code fences, no extra text.
+Return exactly this structure:
+{
+  "answer": "your full answer here",
+  "suggestions": ["follow-up question 1", "follow-up question 2"]
+}
+
+Rules for suggestions:
+- Exactly 2 short follow-up questions the user might naturally ask next
+- Based on the answer and knowledge base context
+- Each under 60 characters
+- Do NOT suggest questions already answered
+- If no logical follow-ups exist, return an empty array []"""
+
+    # ── Response Parser ───────────────────────────────────────────────────────
+
+    def _parse_response(self, raw: str, enable_suggestions: bool) -> tuple[str, list]:
+        """Returns (answer, suggestions). Silently ignores bad JSON."""
+        if not enable_suggestions:
+            return raw.strip(), []
+
+        import json, re
+        cleaned = re.sub(r"```(?:json)?|```", "", raw).strip()
+        try:
+            data        = json.loads(cleaned)
+            answer      = str(data.get("answer", "")).strip()
+            suggestions = data.get("suggestions", [])
+            if not isinstance(suggestions, list):
+                suggestions = []
+            suggestions = [s for s in suggestions if isinstance(s, str) and s.strip()][:2]
+            if not answer:
+                return raw.strip(), []
+            return answer, suggestions
+        except Exception:
+            # Bad JSON — silently ignore, return raw text with no chips
+            return raw.strip(), []
 
     # ── Groq API ──────────────────────────────────────────────────────────────
 
