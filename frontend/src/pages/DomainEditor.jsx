@@ -11,10 +11,18 @@ const isNew = (id) => id === 'new'
 // ── Embed Code Panel ──────────────────────────────────────────────
 function EmbedPanel({ domain, apiKey }) {
   const [mode,    setMode]    = useState('bubble')
+  const [theme,   setTheme]   = useState('card')
   const [color,   setColor]   = useState('#84B179')
   const [title,   setTitle]   = useState(domain?.display_name || 'Ask a question')
   const [pos,     setPos]     = useState('right')
   const [copied,  setCopied]  = useState(false)
+
+  const THEMES = [
+    { key: 'card',    label: 'Card',    desc: 'Clean bubble, safe for any site' },
+    { key: 'minimal', label: 'Minimal', desc: 'Compact pill, zero footprint' },
+    { key: 'branded', label: 'Branded', desc: 'Full accent color immersion' },
+    { key: 'sidebar', label: 'Sidebar', desc: 'Full-height slide-in panel' },
+  ]
 
   const snippet = mode === 'bubble'
     ? `<script
@@ -22,6 +30,7 @@ function EmbedPanel({ domain, apiKey }) {
   data-domain="${domain?.slug || 'your-domain'}"
   data-api-key="${apiKey || 'YOUR_API_KEY'}"
   data-mode="bubble"
+  data-theme="${theme}"
   data-color="${color}"
   data-title="${title}"
   data-position="${pos}"
@@ -36,6 +45,7 @@ function EmbedPanel({ domain, apiKey }) {
   data-api-key="${apiKey || 'YOUR_API_KEY'}"
   data-mode="inline"
   data-target="#ginkgo-chat"
+  data-theme="card"
   data-color="${color}"
   data-title="${title}"
   data-api-url="${BASE}"
@@ -58,7 +68,7 @@ function EmbedPanel({ domain, apiKey }) {
       </p>
 
       {/* Mode tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         {['bubble', 'inline'].map(m => (
           <button
             key={m}
@@ -75,6 +85,33 @@ function EmbedPanel({ domain, apiKey }) {
           >{m}</button>
         ))}
       </div>
+
+      {/* Theme selector — only for bubble mode */}
+      {mode === 'bubble' && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink2)', marginBottom: 8 }}>Theme</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {THEMES.map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTheme(t.key)}
+                style={{
+                  padding: '8px 10px', borderRadius: 7, border: '1px solid',
+                  cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                  background: theme === t.key ? 'var(--green-light)' : 'var(--bg3)',
+                  borderColor: theme === t.key ? 'var(--green)' : 'var(--border2)',
+                  transition: 'all .15s',
+                }}
+              >
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: theme === t.key ? 'var(--green)' : 'var(--ink)', marginBottom: 2 }}>
+                  {t.label}
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--ink3)' }}>{t.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Options */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>

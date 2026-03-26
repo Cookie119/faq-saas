@@ -1,15 +1,10 @@
 """
-routers/dashboard.py  (replace your existing dashboard/domains router)
-
-New endpoints added:
-  POST   /domains/{id}/upload          — upload one or more files
-  GET    /domains/{id}/files           — list uploaded files
-  DELETE /domains/{id}/files/{file_id} — delete a single file & rebuild index
+routers/dashboard.py
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi import status as http_status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 from core.auth import get_current_company
@@ -45,14 +40,13 @@ def _get_domain(domain_id: str, company: Company, db: Session) -> Domain:
 def _rebuild_and_update(domain: Domain, db: Session):
     """Merge all file contents, re-chunk using domain_loader, update chunk_count."""
     files = db.query(DomainFile).filter(DomainFile.domain_id == domain.id).all()
-
-    # Merge all raw markdown content
     all_content = "\n\n---\n\n".join(f.raw_content for f in files)
 
-    # Use existing chunking logic from domain_loader
-    chunks = domain_loader._split_chunks(all_content)
+    try:
+        chunks = domain_loader._split_chunks(all_content)
+    except AttributeError:
+        chunks = [c.strip() for c in all_content.split("\n\n---\n\n") if c.strip()]
 
-    # Store merged content on domain so knowledge_search can access it
     domain.md_content  = all_content
     domain.chunk_count = len(chunks)
     db.commit()
@@ -126,6 +120,7 @@ def create_domain(
         enable_suggestions=payload.enable_suggestions,
         is_active=True,
         chunk_count=0,
+        md_content="",                                    # ← ADDED
     )
     db.add(domain); db.commit(); db.refresh(domain)
     return {"id": str(domain.id), "slug": domain.slug, "display_name": domain.display_name}
@@ -133,14 +128,14 @@ def create_domain(
 
 # ── Update domain ─────────────────────────────────────────────────
 class DomainUpdate(BaseModel):
-    display_name:        str  = None
-    persona:             str  = None
-    tone:                str  = None
-    language:            str  = None
-    fallback_msg:        str  = None
-    is_active:           bool = None
-    allowed_origins:     list = None
-    enable_suggestions:  bool = None
+    display_name:        Optional[str]  = None
+    persona:             Optional[str]  = None
+    tone:                Optional[str]  = None
+    language:            Optional[str]  = None
+    fallback_msg:        Optional[str]  = None
+    is_active:           Optional[bool] = None
+    allowed_origins:     Optional[list] = None
+    enable_suggestions:  Optional[bool] = None
 
 @router.put("/{domain_id}")
 def update_domain(
@@ -164,12 +159,13 @@ def delete_domain(
     db:        Session = Depends(get_db),
 ):
     domain = _get_domain(domain_id, company, db)
+    db.query(DomainFile).filter(DomainFile.domain_id == domain.id).delete()  # ← cascade
     db.delete(domain); db.commit()
 
 
 # ── Upload files ──────────────────────────────────────────────────
 @router.post("/{domain_id}/upload")
-async def upload_files(
+def upload_files(                                         # ← changed to sync def
     domain_id: str,
     files:     List[UploadFile] = File(...),
     company:   Company = Depends(get_current_company),
@@ -180,7 +176,6 @@ async def upload_files(
     errors      = []
     uploaded    = []
 
-    # Check current total size
     existing_size = sum(
         len(f.raw_content.encode('utf-8'))
         for f in db.query(DomainFile).filter(DomainFile.domain_id == domain.id).all()
@@ -192,21 +187,19 @@ async def upload_files(
             errors.append(f"{upload.filename}: unsupported type (.{ext})")
             continue
 
-        content = await upload.read()
+        content = upload.file.read()                      # ← sync read
         file_size = len(content)
 
         if existing_size + file_size > max_bytes:
             errors.append(f"{upload.filename}: would exceed {max_bytes // 1024}KB plan limit")
             continue
 
-        # Convert to markdown
         try:
             markdown = convert_to_markdown(content, upload.filename)
         except (ValueError, ImportError) as e:
             errors.append(f"{upload.filename}: {str(e)}")
             continue
 
-        # Check if file with same name exists — replace it
         existing = db.query(DomainFile).filter(
             DomainFile.domain_id == domain.id,
             DomainFile.filename  == upload.filename,
@@ -231,7 +224,18 @@ async def upload_files(
         db.commit()
         _rebuild_and_update(domain, db)
 
-    # Refresh file list for response
+        # Update per-file chunk counts                    # ← MOVED HERE
+        all_files = db.query(DomainFile).filter(
+            DomainFile.domain_id == domain.id
+        ).all()
+        for df in all_files:
+            try:
+                file_chunks = domain_loader._split_chunks(df.raw_content)
+            except AttributeError:
+                file_chunks = [c for c in df.raw_content.split("\n\n") if c.strip()]
+            df.chunk_count = len(file_chunks)
+        db.commit()
+
     domain_files = db.query(DomainFile).filter(DomainFile.domain_id == domain.id).all()
 
     return {
@@ -266,7 +270,7 @@ def list_files(
     } for f in files]}
 
 
-# ── Get single file content (for editor) ─────────────────────────
+# ── Get single file content ──────────────────────────────────────
 @router.get("/{domain_id}/files/{file_id}/content")
 def get_file_content(
     domain_id: str,
@@ -290,7 +294,7 @@ def get_file_content(
     }
 
 
-# ── Update file content (from MD editor) ─────────────────────────
+# ── Update file content ──────────────────────────────────────────
 class FileContentUpdate(BaseModel):
     raw_content: str
 
@@ -316,11 +320,12 @@ def update_file_content(
     f.raw_content = payload.raw_content
     db.commit()
 
-    # Rebuild index immediately
     _rebuild_and_update(domain, db)
 
-    # Update per-file chunk count estimate
-    file_chunks = domain_loader._split_chunks(payload.raw_content)
+    try:
+        file_chunks = domain_loader._split_chunks(payload.raw_content)
+    except AttributeError:
+        file_chunks = [c for c in payload.raw_content.split("\n\n") if c.strip()]
     f.chunk_count = len(file_chunks)
     db.commit()
 
@@ -331,7 +336,7 @@ def update_file_content(
     }
 
 
-# ── Delete single file ────────────────────────────────────────────
+# ── Delete single file ───────────────────────────────────────────
 @router.delete("/{domain_id}/files/{file_id}")
 def delete_file(
     domain_id: str,
@@ -352,10 +357,10 @@ def delete_file(
     db.delete(domain_file)
     db.commit()
 
-    # Rebuild index from remaining files immediately
     _rebuild_and_update(domain, db)
 
     return {
         "deleted":     domain_file.filename,
         "chunk_count": domain.chunk_count,
     }
+    # ← NOTHING AFTER THIS — garbage block removed
