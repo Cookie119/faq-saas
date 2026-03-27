@@ -392,53 +392,53 @@ def get_plan(
     }
 
 
-# @analytics_router.get("/analytics")
-# def get_analytics(
-#     company: Company = Depends(get_current_company),
-#     db: Session      = Depends(get_db),
-# ):
-#     from datetime import datetime, timedelta
-#     from sqlalchemy import func
+@analytics_router.get("/analytics")
+def get_analytics(
+    company: Company = Depends(get_current_company),
+    db: Session      = Depends(get_db),
+):
+    from datetime import datetime, timedelta
+    from sqlalchemy import func
 
-#     # Total questions all time
-#     total_questions = db.query(func.count(UsageLog.id)).filter(
-#         UsageLog.company_id == company.id
-#     ).scalar() or 0
+    # Total questions all time
+    total_questions = db.query(func.count(UsageLog.id)).filter(
+        UsageLog.company_id == company.id
+    ).scalar() or 0
 
-#     # Questions this month
-#     now        = datetime.utcnow()
-#     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-#     questions_this_month = db.query(func.count(UsageLog.id)).filter(
-#         UsageLog.company_id == company.id,
-#         UsageLog.created_at   >= month_start,
-#     ).scalar() or 0
+    # Questions this month
+    now        = datetime.utcnow()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    questions_this_month = db.query(func.count(UsageLog.id)).filter(
+        UsageLog.company_id == company.id,
+        UsageLog.created_at   >= month_start,
+    ).scalar() or 0
 
-#     # Recent questions (last 20)
-#     recent = db.query(UsageLog).filter(
-#         UsageLog.company_id == company.id
-#     ).order_by(UsageLog.created_at.desc()).limit(20).all()
+    # Recent questions (last 20)
+    recent = db.query(UsageLog).filter(
+        UsageLog.company_id == company.id
+    ).order_by(UsageLog.created_at.desc()).limit(20).all()
 
-#     recent_questions = [{
-#         "question": q.question,
-#         "domain":   q.domain_id.slug,
-#         "at":       q.created_at.isoformat(),
-#     } for q in recent]
+    recent_questions = [{
+        "question": q.question,
+        "domain":   q.domain_id,
+        "at":       q.created_at.isoformat(),
+    } for q in recent]
 
-#     # Top domains by question count
-#     top = db.query(
-#         UsageLog.domain_slug,
-#         func.count(UsageLog.id).label("questions")
-#     ).filter(
-#         UsageLog.company_id == company.id
-#     ).group_by(UsageLog.domain_slug).order_by(
-#         func.count(UsageLog.id).desc()
-#     ).limit(5).all()
+    # Top domains by question count
+    top = db.query(
+        UsageLog.domain_slug,
+        func.count(UsageLog.id).label("questions")
+    ).filter(
+        UsageLog.company_id == company.id
+    ).group_by(UsageLog.domain_id).order_by(
+        func.count(UsageLog.id).desc()
+    ).limit(5).all()
 
-#     top_domains = [{"domain": t.domain_slug, "questions": t.questions} for t in top]
+    top_domains = [{"domain": t.domain_id, "questions": t.questions} for t in top]
 
-#     return {
-#         "total_questions":      total_questions,
-#         "questions_this_month": questions_this_month,
-#         "recent_questions":     recent_questions,
-#         "top_domains":          top_domains,
-#     }
+    return {
+        "total_questions":      total_questions,
+        "questions_this_month": questions_this_month,
+        "recent_questions":     recent_questions,
+        "top_domains":          top_domains,
+    }
