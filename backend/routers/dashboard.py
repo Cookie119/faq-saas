@@ -410,18 +410,18 @@ def get_analytics(
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     questions_this_month = db.query(func.count(UsageLog.id)).filter(
         UsageLog.company_id == company.id,
-        UsageLog.asked_at   >= month_start,
+        UsageLog.created_at   >= month_start,
     ).scalar() or 0
 
     # Recent questions (last 20)
     recent = db.query(UsageLog).filter(
         UsageLog.company_id == company.id
-    ).order_by(UsageLog.asked_at.desc()).limit(20).all()
+    ).order_by(UsageLog.created_at.desc()).limit(20).all()
 
     recent_questions = [{
         "question": q.question,
         "domain":   q.domain_slug,
-        "at":       q.asked_at.isoformat(),
+        "at":       q.created_at.isoformat(),
     } for q in recent]
 
     # Top domains by question count
