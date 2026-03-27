@@ -373,6 +373,12 @@ def delete_file(
 # ══════════════════════════════════════════════════════════════════
 from models.db_models import UsageLog
 
+# ══════════════════════════════════════════════════════════════════
+# ANALYTICS  —  prefix="/dashboard"
+# ══════════════════════════════════════════════════════════════════
+from datetime import datetime, timedelta
+from sqlalchemy import func
+
 analytics_router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
@@ -397,8 +403,8 @@ def get_analytics(
     company: Company = Depends(get_current_company),
     db: Session      = Depends(get_db),
 ):
-    from datetime import datetime, timedelta
-    from sqlalchemy import func
+    now         = datetime.utcnow()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     # Total questions all time
     total_questions = db.query(func.count(UsageLog.id)).filter(
@@ -406,11 +412,9 @@ def get_analytics(
     ).scalar() or 0
 
     # Questions this month
-    now        = datetime.utcnow()
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     questions_this_month = db.query(func.count(UsageLog.id)).filter(
-        UsageLog.company_id == company.id,
-        UsageLog.created_at   >= month_start,
+        UsageLog.company_id  == company.id,
+        UsageLog.created_at  >= month_start,
     ).scalar() or 0
 
     # Recent questions (last 20)
@@ -418,15 +422,12 @@ def get_analytics(
         UsageLog.company_id == company.id
     ).order_by(UsageLog.created_at.desc()).limit(20).all()
 
-    recent_questions = [{
-        "question": q.question,
-        "domain":   q.domain_id,
-        "at":       q.created_at.isoformat(),
-    } for q in recent]
+    # Build slug lookup for referenced domains
+    all_domain_ids = {r.domain_id for r in recent}
 
     # Top domains by question count
     top = db.query(
-        UsageLog.domain_slug,
+        UsageLog.domain_id,
         func.count(UsageLog.id).label("questions")
     ).filter(
         UsageLog.company_id == company.id
@@ -434,7 +435,26 @@ def get_analytics(
         func.count(UsageLog.id).desc()
     ).limit(5).all()
 
-    top_domains = [{"domain": t.domain_id, "questions": t.questions} for t in top]
+    all_domain_ids.update(t.domain_id for t in top)
+
+    # Single query to resolve all domain IDs → slugs
+    slug_map = {}
+    if all_domain_ids:
+        domains = db.query(Domain).filter(Domain.id.in_(all_domain_ids)).all()
+        slug_map = {str(d.id): d.slug for d in domains}
+
+    recent_questions = [{
+        "question":  q.question,
+        "domain_id": str(q.domain_id),
+        "slug":      slug_map.get(str(q.domain_id), "unknown"),
+        "at":        q.created_at.isoformat(),
+    } for q in recent]
+
+    top_domains = [{
+        "domain_id": str(t.domain_id),
+        "slug":      slug_map.get(str(t.domain_id), "unknown"),
+        "questions": t.questions,
+    } for t in top]
 
     return {
         "total_questions":      total_questions,
@@ -442,3 +462,5 @@ def get_analytics(
         "recent_questions":     recent_questions,
         "top_domains":          top_domains,
     }
+
+# ← FILE ENDS HERE — no UsageLog class definition
