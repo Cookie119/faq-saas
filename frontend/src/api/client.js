@@ -37,9 +37,11 @@ export const domainsAPI = {
   create:  (data)       => api.post('/domains', data),
   update:  (id, data)   => api.put(`/domains/${id}`, data),
   delete:  (id)         => api.delete(`/domains/${id}`),
-  upload:  (id, file)   => {
+  upload:  (id, files)  => {
     const form = new FormData()
-    form.append('file', file)
+    // Accept single file or array
+    const arr = Array.isArray(files) ? files : [files]
+    arr.forEach(f => form.append('files', f))
     return api.post(`/domains/${id}/upload`, form, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
