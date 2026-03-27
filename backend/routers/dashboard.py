@@ -437,22 +437,22 @@ def get_analytics(
 
     all_domain_ids.update(t.domain_id for t in top)
 
-    # Single query to resolve all domain IDs → slugs
+    # Single query to resolve all domain IDs → display names + slugs
     slug_map = {}
+    name_map = {}
     if all_domain_ids:
         domains = db.query(Domain).filter(Domain.id.in_(all_domain_ids)).all()
-        slug_map = {str(d.id): d.slug for d in domains}
+        slug_map = {str(d.id): d.slug         for d in domains}
+        name_map = {str(d.id): d.display_name for d in domains}
 
     recent_questions = [{
-        "question":  q.question,
-        "domain_id": str(q.domain_id),
-        "slug":      slug_map.get(str(q.domain_id), "unknown"),
-        "at":        q.created_at.isoformat(),
+        "question": q.question,
+        "domain":   name_map.get(str(q.domain_id)) or slug_map.get(str(q.domain_id), "unknown"),
+        "at":       q.created_at.isoformat(),
     } for q in recent]
 
     top_domains = [{
-        "domain_id": str(t.domain_id),
-        "slug":      slug_map.get(str(t.domain_id), "unknown"),
+        "domain":    name_map.get(str(t.domain_id)) or slug_map.get(str(t.domain_id), "unknown"),
         "questions": t.questions,
     } for t in top]
 
