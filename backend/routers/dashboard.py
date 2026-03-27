@@ -420,7 +420,7 @@ def get_analytics(
 
     recent_questions = [{
         "question": q.question,
-        "domain":   q.domain_slug,
+        "domain":   q.domain_id.slug,
         "at":       q.created_at.isoformat(),
     } for q in recent]
 
