@@ -7,7 +7,7 @@
   const cfg = {
     domain:      script.getAttribute('data-domain')      || '',
     apiKey:      script.getAttribute('data-api-key')     || '',
-    apiUrl:      script.getAttribute('data-api-url')     || 'https://faq-saas.onrender.com',
+    apiUrl:      script.getAttribute('data-api-url')     || 'https://faq-saas-ws0s.onrender.com',
     mode:        script.getAttribute('data-mode')        || 'bubble',
     target:      script.getAttribute('data-target')      || '',
     theme:       script.getAttribute('data-theme')       || 'card',

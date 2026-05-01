@@ -30,7 +30,7 @@ origins = [
     "http://127.0.0.1:3000",
     # Production
     "https://faq-saas-blond.vercel.app",
-    "https://faq-saas.onrender.com",
+    "https://faq-saas-ws0s.onrender.com",
 ]
 
 # Also add whatever is in FRONTEND_URL env var (future-proof)

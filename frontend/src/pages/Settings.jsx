@@ -80,7 +80,7 @@ export default function Settings() {
         {/* Integration Example */}
         <div className="card">
           <div className="card-title">Integration Example</div>
-          <pre className="code-block">{`fetch("https://faq-saas.onrender.com/ask", {
+          <pre className="code-block">{`fetch("https://faq-saas-ws0s.onrender.com/ask", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
